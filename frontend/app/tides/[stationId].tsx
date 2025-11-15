@@ -20,16 +20,14 @@ interface TidePredictionResponse {
 export default function TideDetailScreen() {
   const { stationId } = useLocalSearchParams<{ stationId: string }>();
 
-  const { data, isLoading, isError } = useQuery<TidePredictionResponse, Error>(
-    ["tidePredictions", stationId],
-    async () => {
+  const { data, isLoading, isError } = useQuery<TidePredictionResponse, Error>({
+    queryKey: ["tidePredictions", stationId],
+    enabled: !!stationId,
+    queryFn: async () => {
       const res = await api.get(`/api/tides/stations/${stationId}/predictions`);
       return res.data;
     },
-    {
-      enabled: !!stationId,
-    }
-  );
+  });
 
   return (
     <SafeAreaView style={styles.safeArea}>

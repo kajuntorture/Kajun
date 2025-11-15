@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator 
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FlashList } from "@shopify/flash-list";
 import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
 import api from "../../src/api/client";
 
 interface TideStation {
@@ -14,18 +15,19 @@ interface TideStation {
 export default function TidesScreen() {
   const [search, setSearch] = useState("san francisco");
   const [submittedSearch, setSubmittedSearch] = useState("san francisco");
+  const router = useRouter();
 
-  const { data, isLoading, isError, refetch } = useQuery<{ data: TideStation[] } | TideStation[], Error>(
-    ["tideStations", submittedSearch],
-    async () => {
+  const { data, isLoading, isError, refetch } = useQuery<TideStation[], Error>({
+    queryKey: ["tideStations", submittedSearch],
+    queryFn: async () => {
       const res = await api.get("/api/tides/stations", {
         params: { search: submittedSearch, state: "CA" },
       });
-      return res.data;
-    }
-  );
+      return res.data as TideStation[];
+    },
+  });
 
-  const stations: TideStation[] = Array.isArray(data) ? data : data?.data ?? [];
+  const stations: TideStation[] = data ?? [];
 
   const handleSearch = () => {
     setSubmittedSearch(search.trim());
@@ -71,12 +73,15 @@ export default function TidesScreen() {
             estimatedItemSize={56}
             contentContainerStyle={styles.listContent}
             renderItem={({ item }) => (
-              <View style={styles.stationRow}>
+              <TouchableOpacity
+                style={styles.stationRow}
+                onPress={() => router.push(`/tides/${item.id}`)}
+              >
                 <View>
                   <Text style={styles.stationName}>{item.name}</Text>
                   <Text style={styles.stationSub}>{item.state ?? "US"}</Text>
                 </View>
-              </View>
+              </TouchableOpacity>
             )}
           />
         )}
