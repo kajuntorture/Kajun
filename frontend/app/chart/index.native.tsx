@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from "rea
 import MapView, { Marker, UrlTile, PROVIDER_GOOGLE } from "react-native-maps";
 import * as Location from "expo-location";
 import { SafeAreaView } from "react-native-safe-area-context";
+import api from "../../src/api/client";
+import { useTrackStore } from "../../src/store/useTrackStore";
 
 const GARMIN_BG = "#020617"; // near-black navy
 const GARMIN_PANEL = "#020617";
@@ -13,6 +15,8 @@ export default function ChartScreenNative() {
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [requesting, setRequesting] = useState(true);
+  const { currentTrackId, isTracking, startTrack, stopTrack, addPoint, points, reset } =
+    useTrackStore();
 
   useEffect(() => {
     (async () => {
@@ -35,13 +39,66 @@ export default function ChartScreenNative() {
           timeInterval: 3000,
           distanceInterval: 5,
         },
-        (loc) => {
+        async (loc) => {
           setLocation(loc as any);
+
+          if (isTracking && currentTrackId) {
+            const point = {
+              timestamp: new Date().toISOString(),
+              lat: loc.coords.latitude,
+              lon: loc.coords.longitude,
+              speed_kn: loc.coords.speed ? loc.coords.speed * 1.94384 : undefined,
+              course_deg:
+                typeof loc.coords.heading === "number" && loc.coords.heading >= 0
+                  ? loc.coords.heading
+                  : undefined,
+            };
+            addPoint(point);
+
+            // Send in small batches of up to 10 points
+            if (points.length >= 9) {
+              try {
+                await api.post(`/api/tracks/${currentTrackId}/points`, {
+                  points: [...points, point],
+                });
+                reset();
+                startTrack(currentTrackId);
+              } catch (e) {
+                // eslint-disable-next-line no-console
+                console.log("Failed to push track points", e);
+              }
+            }
+          }
         }
       );
       setRequesting(false);
     })();
-  }, []);
+  }, [currentTrackId, isTracking, points, addPoint, reset, startTrack]);
+
+  const handleToggleTrack = async () => {
+    if (!isTracking) {
+      // Start new track via backend
+      try {
+        const res = await api.post("/api/tracks", {
+          name: "On-water track",
+        });
+        const trackId = res.data.id;
+        startTrack(trackId);
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.log("Failed to start track", e);
+      }
+    } else if (currentTrackId) {
+      // Stop track
+      try {
+        await api.patch(`/api/tracks/${currentTrackId}/end`);
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.log("Failed to end track", e);
+      }
+      stopTrack();
+    }
+  };
 
   const region = location
     ? {
@@ -122,8 +179,8 @@ export default function ChartScreenNative() {
         </View>
 
         <View style={styles.bottomBar}>
-          <TouchableOpacity style={styles.primaryButton}>
-            <Text style={styles.primaryButtonText}>Start Track</Text>
+          <TouchableOpacity style={styles.primaryButton} onPress={handleToggleTrack}>
+            <Text style={styles.primaryButtonText}>{isTracking ? "Stop Track" : "Start Track"}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.secondaryButton}>
             <Text style={styles.secondaryButtonText}>Add WPT</Text>
