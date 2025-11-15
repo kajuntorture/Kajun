@@ -37,11 +37,12 @@ function formatDuration(startIso: string, endIso?: string | null) {
 }
 
 export default function TripsScreen() {
-  const { data, isLoading, isError, refetch } = useQuery<Track[], Error>([
-    "tracks",
-  ], async () => {
-    const res = await api.get<Track[]>("/api/tracks");
-    return res.data;
+  const { data, isLoading, isError, refetch } = useQuery<Track[], Error>({
+    queryKey: ["tracks"],
+    queryFn: async () => {
+      const res = await api.get<Track[]>("/api/tracks");
+      return res.data;
+    },
   });
 
   const tracks = data ?? [];
