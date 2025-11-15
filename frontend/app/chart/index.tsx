@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Platform } from "react-native";
-import MapView, { Marker, PROVIDER_GOOGLE, Polyline, UrlTile } from "react-native-maps";
 import * as Location from "expo-location";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -57,6 +56,20 @@ export default function ChartScreen() {
         longitudeDelta: 0.2,
       };
 
+  // Lazy-load react-native-maps only on native to avoid web compatibility issues
+  let MapViewComp: any = null;
+  let MarkerComp: any = null;
+  let UrlTileComp: any = null;
+  let PROVIDER_GOOGLE_CONST: any = null;
+
+  if (Platform.OS !== "web") {
+    const Maps = require("react-native-maps");
+    MapViewComp = Maps.default;
+    MarkerComp = Maps.Marker;
+    UrlTileComp = Maps.UrlTile;
+    PROVIDER_GOOGLE_CONST = Maps.PROVIDER_GOOGLE;
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -84,41 +97,53 @@ export default function ChartScreen() {
               <Text style={styles.loadingText}>Acquiring GPS fix…</Text>
             </View>
           )}
-          <MapView
-            style={StyleSheet.absoluteFill}
-            provider={PROVIDER_GOOGLE}
-            initialRegion={region}
-            region={region}
-            customMapStyle={garminDarkMapStyle}
-            showsCompass={false}
-            showsScale={false}
-            rotateEnabled
-            pitchEnabled={false}
-            toolbarEnabled={false}
-          >
-            {/* OSM base tiles */}
-            <UrlTile
-              urlTemplate="https://a.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              maximumZ={19}
-              flipY={false}
-              tileSize={256}
-              zIndex={-1}
-            />
 
-            {location && (
-              <Marker
-                coordinate={{
-                  latitude: location.coords.latitude,
-                  longitude: location.coords.longitude,
-                }}
-                anchor={{ x: 0.5, y: 0.5 }}
-              >
-                <View style={styles.vesselMarkerOuter}>
-                  <View style={styles.vesselMarkerInner} />
-                </View>
-              </Marker>
-            )}
-          </MapView>
+          {Platform.OS === "web" ? (
+            <View style={[StyleSheet.absoluteFill, styles.webPlaceholder]}>
+              <Text style={styles.webPlaceholderTitle}>Chart preview not available on web</Text>
+              <Text style={styles.webPlaceholderText}>
+                Open this project in Expo Go or a native build to see the live Garmin-style chart with GPS.
+              </Text>
+            </View>
+          ) : MapViewComp ? (
+            <MapViewComp
+              style={StyleSheet.absoluteFill}
+              provider={PROVIDER_GOOGLE_CONST}
+              initialRegion={region}
+              region={region}
+              customMapStyle={garminDarkMapStyle}
+              showsCompass={false}
+              showsScale={false}
+              rotateEnabled
+              pitchEnabled={false}
+              toolbarEnabled={false}
+            >
+              {/* OSM base tiles */}
+              {UrlTileComp && (
+                <UrlTileComp
+                  urlTemplate="https://a.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  maximumZ={19}
+                  flipY={false}
+                  tileSize={256}
+                  zIndex={-1}
+                />
+              )}
+
+              {location && MarkerComp && (
+                <MarkerComp
+                  coordinate={{
+                    latitude: location.coords.latitude,
+                    longitude: location.coords.longitude,
+                  }}
+                  anchor={{ x: 0.5, y: 0.5 }}
+                >
+                  <View style={styles.vesselMarkerOuter}>
+                    <View style={styles.vesselMarkerInner} />
+                  </View>
+                </MarkerComp>
+              )}
+            </MapViewComp>
+          ) : null}
         </View>
 
         <View style={styles.bottomBar}>
@@ -260,6 +285,24 @@ const styles = StyleSheet.create({
   errorText: {
     color: "#fee2e2",
     fontSize: 12,
+    textAlign: "center",
+  },
+  webPlaceholder: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 24,
+    backgroundColor: "#020617",
+  },
+  webPlaceholderTitle: {
+    color: GARMIN_ACCENT,
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  webPlaceholderText: {
+    color: GARMIN_TEXT,
+    fontSize: 13,
     textAlign: "center",
   },
 });
