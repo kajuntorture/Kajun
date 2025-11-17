@@ -6,7 +6,6 @@ import * as FileSystem from "expo-file-system";
 import { SafeAreaView } from "react-native-safe-area-context";
 import api from "../../src/api/client";
 import { useTrackStore } from "../../src/store/useTrackStore";
-import NetInfo from "@react-native-community/netinfo";
 import { useRouter } from "expo-router";
 
 const GARMIN_BG = "#020617"; // near-black navy
@@ -21,18 +20,10 @@ export default function ChartScreenNative() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [requesting, setRequesting] = useState(true);
   const [isOfflinePreferred, setIsOfflinePreferred] = useState(false);
-  const [isNetworkOnline, setIsNetworkOnline] = useState(true);
   const router = useRouter();
 
   const { currentTrackId, isTracking, startTrack, stopTrack, addPoint, points, reset } =
     useTrackStore();
-
-  useEffect(() => {
-    const unsubscribe = NetInfo.addEventListener((state: any) => {
-      setIsNetworkOnline(!!state.isConnected && !!state.isInternetReachable);
-    });
-    return () => unsubscribe();
-  }, []);
 
   useEffect(() => {
     (async () => {
@@ -130,7 +121,7 @@ export default function ChartScreenNative() {
         longitudeDelta: 0.2,
       };
 
-  const useOfflineTiles = isOfflinePreferred || !isNetworkOnline;
+  const useOfflineTiles = isOfflinePreferred;
 
   const offlineUrlTemplate = `${TILE_ROOT}/{z}/{x}/{y}.png`;
   const onlineUrlTemplate = "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png";
