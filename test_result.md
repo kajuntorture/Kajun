@@ -101,3 +101,120 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: |
+  Implement Route Navigation on Chart (Option 1 from prioritized list):
+  - Display active route information in chart header (name, distance, ETA)
+  - Visualize active route on map with polyline and numbered waypoint markers
+  - Calculate ETA based on current GPS speed (SOG)
+  - Use Garmin-style magenta/purple color for route display
+
+backend:
+  - task: "Create GET /api/routes/{route_id}/details endpoint"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          Created new endpoint that:
+          - Fetches route with full waypoint details
+          - Calculates total distance using haversine formula
+          - Returns RouteWithWaypoints model with id, name, waypoints list, and total_distance_nm
+          Ready for testing.
+
+frontend:
+  - task: "Display active route info in chart header"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/app/chart/index.native.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          Added route info display:
+          - Fetches active route details via React Query when activeRoute is set
+          - Shows route name, total distance, and calculated ETA
+          - ETA calculated based on current SOG (speed over ground)
+          - Styled with magenta/purple theme matching Garmin aesthetic
+          
+  - task: "Visualize active route on map"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/app/chart/index.native.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          Added route visualization:
+          - Polyline connecting route waypoints in magenta (#c026d3)
+          - Numbered circular markers for each route waypoint
+          - Route waypoints displayed with different style than regular waypoints
+          - Polyline renders only when 2+ waypoints exist
+          
+  - task: "ETA calculation logic"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/app/chart/index.native.tsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          Implemented calculateETA helper:
+          - Takes distance (nm) and speed (kn) as inputs
+          - Returns formatted string (e.g., "2h 30m" or "45m")
+          - Shows "--" when speed < 0.5 knots (stationary/no GPS)
+          - Updates in real-time as SOG changes
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Create GET /api/routes/{route_id}/details endpoint"
+    - "Display active route info in chart header"
+    - "Visualize active route on map"
+    - "ETA calculation logic"
+  stuck_tasks: []
+  test_all: true
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: |
+      Implementation complete for Route Navigation on Chart feature.
+      
+      Backend changes:
+      - Added GET /api/routes/{route_id}/details endpoint
+      - Returns route with full waypoint details and calculated total distance
+      
+      Frontend changes:
+      - Chart screen now fetches and displays active route data
+      - Route info bar shows name, distance, and live ETA
+      - Route visualized on map with magenta polyline
+      - Route waypoints shown as numbered circles
+      - ETA updates based on current GPS speed
+      
+      Testing needed:
+      1. Backend: Test /api/routes/{route_id}/details endpoint
+      2. Frontend: Test route selection and chart display
+      3. Verify ETA calculations with different speeds
+      4. Check map visualization with active route
+      
+      Services restarted and ready for testing.
