@@ -23,6 +23,13 @@ interface Waypoint {
   lon: number;
 }
 
+interface RouteWithWaypoints {
+  id: string;
+  name: string;
+  waypoints: Waypoint[];
+  total_distance_nm: number;
+}
+
 export default function ChartScreenNative() {
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
