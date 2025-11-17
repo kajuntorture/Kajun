@@ -28,7 +28,7 @@ export default function ChartScreenNative() {
     useTrackStore();
 
   useEffect(() => {
-    const unsubscribe = NetInfo.addEventListener((state) => {
+    const unsubscribe = NetInfo.addEventListener((state: any) => {
       setIsNetworkOnline(!!state.isConnected && !!state.isInternetReachable);
     });
     return () => unsubscribe();
