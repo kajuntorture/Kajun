@@ -29,11 +29,9 @@ function deg2tile(lat: number, lon: number, zoom: number) {
   const latRad = (lat * Math.PI) / 180;
   const n = 2 ** zoom;
   const xtile = Math.floor(((lon + 180) / 360) * n);
-  const ytile = Math.floor((
-    1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI
-  ) /
-    2 /
-    n);
+  const ytile = Math.floor(
+    (1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2 * n
+  );
   return { x: xtile, y: ytile };
 }
 
