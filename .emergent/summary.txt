@@ -1,0 +1,105 @@
+<analysis>
+The user requested a mobile marine navigation app mimicking a Garmin plotter, built using an Expo/FastAPI/MongoDB stack. The AI engineer initiated the project by creating a detailed technical specification and a phased development plan. The development was iterative, with the AI implementing features in vertical slices and seeking user confirmation at each stage.
+
+Key features implemented include a Garmin-style dark-themed chart with live GPS tracking (SOG/COG), OpenStreetMap tile integration, and offline map downloading. The backend, built with FastAPI, provides REST APIs for managing tracks, waypoints, routes, and trips. It also acts as a proxy for the NOAA tides API. The frontend, built with Expo (React Native), uses  for tab-based navigation (Chart, Tides, Routes, Trips). State is managed via Zustand for client-side state and TanStack React Query for server state.
+
+Several technical challenges were addressed during development. A  compatibility issue on the web preview was solved by creating platform-specific files (). A React Query v5 migration was required, updating  calls to the new object syntax. Dependency issues with  (requiring ) and  led to their removal in favor of a more stable, custom  chart and manual offline toggling, respectively. The project concluded with a functional MVP that met the user's explicit requests.
+
+The user's primary language is English. The next agent must respond in English.
+</analysis>
+
+<product_requirements>
+The goal is to build a full-featured marine navigation mobile application with the look and feel of a Garmin chartplotter.
+
+**Core Features Implemented:**
+1.  **Live Chartplotter:** A primary screen displaying a map with the vessel's live GPS position. It shows Speed Over Ground (SOG) and Course Over Ground (COG). The UI follows a dark, Garmin-like theme.
+2.  **Track Recording:** Users can start and stop recording their voyage. The recorded track data is persisted in the backend.
+3.  **Trips Log:** A dedicated tab lists completed trips, automatically generated when a track recording is stopped. This view displays key statistics, including total distance, duration, and average/max speeds.
+4.  **Waypoints & Routes:**
+    *   Users can create waypoints at their current location directly from the chart screen.
+    *   A Routes tab allows users to view created waypoints and build routes by selecting a sequence of them.
+    *   The app can display route details, including total distance and per-leg distances.
+5.  **Tide Information:** The app integrates with the NOAA CO-OPS API to provide tide data for US stations. It includes a search function and a detail screen showing a daily tide curve chart and a table of high/low tides.
+6.  **Offline Maps:** Users can download map tiles for a specified geographical area and zoom range for offline use. The chart screen allows toggling between online and offline map tiles.
+</product_requirements>
+
+<key_technical_concepts>
+- **Frameworks:** Expo (React Native), FastAPI (Python)
+- **Database:** MongoDB
+- **Frontend Core:**
+    - **Navigation:**  (file-based)
+    - **State Management:** Zustand (client-side), TanStack React Query (server-side)
+    - **Maps:**  with OpenStreetMap 
+    - **Charts:**  for a custom tide chart
+- **Backend Core:**
+    - Pydantic for data modeling
+    -  for asynchronous MongoDB access
+    -  for external API calls (NOAA)
+- **Offline Functionality:**  for downloading and storing map tiles.
+</key_technical_concepts>
+
+<code_architecture>
+The application follows a standard full-stack architecture with a mobile frontend and a RESTful backend.
+
+**Directory Structure:**
+
+
+**Key Files:**
+
+-   ****
+    -   **Importance:** This file contains the entire FastAPI backend logic.
+    -   **Summary:** It defines Pydantic models and API endpoints for all core features: Tracks (), Waypoints (), Routes (), and Trips (). It also includes endpoints to proxy requests to the NOAA tides API (). When a track is ended, it automatically calculates trip statistics (distance, speed) and creates a corresponding trip entry.
+
+-   ****
+    -   **Importance:** This is the root layout file for .
+    -   **Summary:** It sets up the main  navigator for the four primary sections of the app: Chart, Trips, Tides, and Routes. It also wraps the application in necessary providers like .
+
+-   ****
+    -   **Importance:** The core native screen for the chartplotter functionality.
+    -   **Summary:** This file uses  to display the map. It handles GPS location tracking via  to show live SOG/COG. It includes UI controls for starting/stopping track recording, adding waypoints, downloading offline maps, and toggling map layers (waypoints, offline tiles). It contains a fallback mechanism to prevent crashes if the map module is unsupported.
+
+-   ****
+    -   **Importance:** The screen for managing offline map downloads.
+    -   **Summary:** Provides a form for users to define a bounding box and zoom range. It uses  to download and save OSM tiles to the device's local storage. It's pre-filled with the user's current location.
+
+-   ****
+    -   **Importance:** Displays the user's log of completed trips.
+    -   **Summary:** Fetches data from the  endpoint and displays a list of trips with calculated stats: distance, duration, average speed, and max speed.
+
+-   ****
+    -   **Importance:** The main screen for managing waypoints and routes.
+    -   **Summary:** Displays two lists: one for all created waypoints and one for all created routes. It allows the user to select an active route and provides a button to navigate to the new route creation screen.
+
+-   ****
+    -   **Importance:** The form for creating a new route.
+    -   **Summary:** Fetches existing waypoints and allows the user to select them in order to create and save a new named route.
+
+-   ****
+    -   **Importance:** The detail screen for tide predictions.
+    -   **Summary:** Fetches predictions for a specific station from the backend. It displays the data in two forms: a custom line chart built with  showing tide height over time, and a textual list of the day's high and low tides.
+</code_architecture>
+
+<pending_tasks>
+The user marked the project as Complete, but the following features were discussed as potential next steps and were part of the user-prioritized roadmap (3, 1, 2):
+- **Route Navigation Details on Chart:** Display total route distance and a simple ETA based on current speed directly in the chart's header for the active route.
+- **Advanced Trip Details:** Create a trip detail screen to show a map overlay of the recorded track and more in-depth statistics.
+- **Additional Chart Layers:** Add a toggle for showing/hiding historical track lines.
+</pending_tasks>
+
+<current_work>
+The project is considered feature-complete from the user's perspective, as indicated by the final Complete messages. The last set of implemented features successfully delivered a stable MVP.
+
+**Final Implemented Features:**
+1.  **Automatic Trip Statistics:** The backend was enhanced to automatically calculate total distance, duration, average speed, and max speed when a track recording is stopped via . A new  collection stores this data. The frontend Trips tab was updated to fetch from  and display these comprehensive statistics.
+2.  **Location-Aware Offline Downloads:** The Download flow was improved. When initiated from the Chart screen, it now automatically uses the current GPS location to pre-fill the bounding box on the  screen, simplifying the process of caching the local map area.
+3.  **Stability and Error Handling:** Several critical bugs were resolved throughout the development process.
+    *   A crash on the native chart ( error) was mitigated by wrapping the  import in a try-catch block and displaying a fallback message if the module fails to load, ensuring app stability.
+    *   An error related to a missing gradient package () was fixed by replacing the  library with a custom, dependency-free  component for the tide chart.
+    *   The entire application was updated to conform to the React Query v5 API, resolving Bad argument type errors.
+
+The final state is a working application that can be loaded and tested on a mobile device via Expo Go, delivering on all core requirements for a marine navigation plotter.
+</current_work>
+
+<optional_next_step>
+Confirm with the user if they wish to proceed with the next prioritized feature: displaying the active route's distance and ETA directly on the Chart screen's header.
+</optional_next_step>
