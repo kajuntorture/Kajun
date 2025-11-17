@@ -196,6 +196,10 @@ export default function ChartScreenNative() {
     }
   }
 
+  const downloadHref = location
+    ? `/chart/download?lat=${location.coords.latitude}&lon=${location.coords.longitude}`
+    : "/chart/download";
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -310,7 +314,7 @@ export default function ChartScreenNative() {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.secondaryButton}
-            onPress={() => router.push("/chart/download")}
+            onPress={() => router.push(downloadHref)}
           >
             <Text style={styles.secondaryButtonText}>Download</Text>
           </TouchableOpacity>
