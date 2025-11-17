@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { LineChart } from "react-native-gifted-charts";
+import { LinearGradient } from "expo-linear-gradient";
 import api from "../../src/api/client";
 
 interface TidePredictionPoint {
@@ -75,27 +76,34 @@ export default function TideDetailScreen() {
             <Text style={styles.subHeading}>Date: {data.date}</Text>
 
             {chartData.length > 0 ? (
-              <View style={styles.chartBox}>
-                <Text style={styles.chartTitle}>Height (ft) vs Time (UTC)</Text>
-                <LineChart
-                  data={chartData}
-                  thickness={2}
-                  color="#22d3ee"
-                  areaChart
-                  startFillColor="rgba(34,211,238,0.35)"
-                  endFillColor="rgba(15,23,42,0.1)"
-                  startOpacity={0.8}
-                  endOpacity={0.1}
-                  hideDataPoints
-                  yAxisColor="transparent"
-                  xAxisColor="#111827"
-                  xAxisLabelTextStyle={styles.axisLabel}
-                  yAxisTextStyle={styles.axisLabel}
-                  yAxisOffset={Math.floor(minY) - 1}
-                  maxValue={Math.ceil(maxY) + 1}
-                  noOfSections={4}
-                  backgroundColor="transparent"
-                />
+              <View style={styles.chartWrapper}>
+                <LinearGradient
+                  colors={["#020617", "#020617"]}
+                  style={styles.chartGradient}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                >
+                  <Text style={styles.chartTitle}>Height (ft) vs Time (UTC)</Text>
+                  <LineChart
+                    data={chartData}
+                    thickness={2}
+                    color="#22d3ee"
+                    areaChart
+                    startFillColor="rgba(34,211,238,0.35)"
+                    endFillColor="rgba(15,23,42,0.1)"
+                    startOpacity={0.8}
+                    endOpacity={0.1}
+                    hideDataPoints
+                    yAxisColor="transparent"
+                    xAxisColor="#111827"
+                    xAxisLabelTextStyle={styles.axisLabel}
+                    yAxisTextStyle={styles.axisLabel}
+                    yAxisOffset={Math.floor(minY) - 1}
+                    maxValue={Math.ceil(maxY) + 1}
+                    noOfSections={4}
+                    backgroundColor="transparent"
+                  />
+                </LinearGradient>
               </View>
             ) : (
               <Text style={styles.infoText}>No predictions for this day.</Text>
@@ -158,12 +166,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: "center",
   },
-  chartBox: {
-    backgroundColor: "#020617",
+  chartWrapper: {
     borderRadius: 12,
+    overflow: "hidden",
+    marginBottom: 16,
+  },
+  chartGradient: {
     paddingVertical: 12,
     paddingHorizontal: 4,
-    marginBottom: 16,
   },
   chartTitle: {
     color: "#e5e7eb",
