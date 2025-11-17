@@ -70,6 +70,23 @@ export default function ChartScreenNative() {
 
   const waypoints = showWaypoints && waypointData ? waypointData : [];
 
+  // Calculate ETA based on current speed
+  const calculateETA = (distanceNm: number, speedKn: number): string => {
+    if (!speedKn || speedKn < 0.5) {
+      return "--";
+    }
+    const hoursRemaining = distanceNm / speedKn;
+    const hours = Math.floor(hoursRemaining);
+    const minutes = Math.round((hoursRemaining - hours) * 60);
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
+  };
+
+  const currentSpeedKn = location?.coords.speed ? location.coords.speed * 1.94384 : 0;
+
   useEffect(() => {
     (async () => {
       setRequesting(true);
