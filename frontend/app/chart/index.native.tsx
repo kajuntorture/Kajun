@@ -6,7 +6,7 @@ import * as FileSystem from "expo-file-system";
 import { SafeAreaView } from "react-native-safe-area-context";
 import api from "../../src/api/client";
 import { useTrackStore } from "../../src/store/useTrackStore";
-import NetInfo from "@react-native-netinfo/netinfo";
+import NetInfo from "@react-native-community/netinfo";
 import { useRouter } from "expo-router";
 
 const GARMIN_BG = "#020617"; // near-black navy
@@ -15,10 +15,6 @@ const GARMIN_ACCENT = "#22d3ee"; // cyan
 const GARMIN_TEXT = "#e5e7eb"; // light gray
 
 const TILE_ROOT = `${FileSystem.documentDirectory}tiles`;
-
-function stringifyTemplate(template: string, z: number, x: number, y: number) {
-  return template.replace("{z}", String(z)).replace("{x}", String(x)).replace("{y}", String(y));
-}
 
 export default function ChartScreenNative() {
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
