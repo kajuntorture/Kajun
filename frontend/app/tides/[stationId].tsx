@@ -1,10 +1,9 @@
 import React, { useMemo } from "react";
-import { View, Text, StyleSheet, ActivityIndicator, ScrollView } from "react-native";
+import { View, Text, StyleSheet, ActivityIndicator, ScrollView, useWindowDimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
-import { LineChart } from "react-native-gifted-charts";
-import { LinearGradient } from "expo-linear-gradient";
+import Svg, { Polyline, Line as SvgLine, Text as SvgText } from "react-native-svg";
 import api from "../../src/api/client";
 
 interface TidePredictionPoint {
@@ -21,6 +20,7 @@ interface TidePredictionResponse {
 
 export default function TideDetailScreen() {
   const { stationId } = useLocalSearchParams<{ stationId: string }>();
+  const { width } = useWindowDimensions();
 
   const { data, isLoading, isError } = useQuery<TidePredictionResponse, Error>({
     queryKey: ["tidePredictions", stationId],
@@ -31,27 +31,59 @@ export default function TideDetailScreen() {
     },
   });
 
-  const chartData = useMemo(() => {
-    if (!data?.predictions?.length) return [] as { value: number; label: string }[];
-    return data.predictions.map((p) => {
+  const chartInfo = useMemo(() => {
+    if (!data?.predictions?.length) {
+      return {
+        pointsString: "",
+        labels: [] as { x: number; text: string }[],
+        minY: 0,
+        maxY: 0,
+      };
+    }
+
+    const sorted = [...data.predictions].sort(
+      (a, b) => new Date(a.time).getTime() - new Date(b.time).getTime()
+    );
+
+    const values = sorted.map((p) => p.height_ft);
+    const minY = Math.min(...values);
+    const maxY = Math.max(...values);
+    const padding = 0.5;
+    const yMin = minY - padding;
+    const yMax = maxY + padding;
+
+    const chartWidth = Math.min(width - 48, 360);
+    const chartHeight = 160;
+    const leftPad = 8;
+    const topPad = 8;
+
+    const n = sorted.length;
+    const pointsString = sorted
+      .map((p, idx) => {
+        const t = idx / Math.max(1, n - 1);
+        const x = leftPad + t * (chartWidth - leftPad * 2);
+        const yNorm = (p.height_ft - yMin) / Math.max(1e-3, yMax - yMin);
+        const y = topPad + (1 - yNorm) * (chartHeight - topPad * 2);
+        return `${x},${y}`;
+      })
+      .join(" ");
+
+    const labels: { x: number; text: string }[] = [];
+    sorted.forEach((p, idx) => {
+      // Only label a few points (e.g., every other)
+      if (idx % 2 !== 0) return;
+      const t = idx / Math.max(1, n - 1);
+      const x = leftPad + t * (chartWidth - leftPad * 2);
       const d = new Date(p.time);
-      const label = `${d.getUTCHours().toString().padStart(2, "0")}:${d
+      const text = `${d.getUTCHours().toString().padStart(2, "0")}:${d
         .getUTCMinutes()
         .toString()
         .padStart(2, "0")}`;
-      return { value: p.height_ft, label };
+      labels.push({ x, text });
     });
-  }, [data]);
 
-  const maxY = useMemo(() => {
-    if (!chartData.length) return 0;
-    return Math.max(...chartData.map((p) => p.value));
-  }, [chartData]);
-
-  const minY = useMemo(() => {
-    if (!chartData.length) return 0;
-    return Math.min(...chartData.map((p) => p.value));
-  }, [chartData]);
+    return { pointsString, labels, minY: yMin, maxY: yMax, chartWidth, chartHeight };
+  }, [data, width]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -75,35 +107,50 @@ export default function TideDetailScreen() {
           <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 24 }}>
             <Text style={styles.subHeading}>Date: {data.date}</Text>
 
-            {chartData.length > 0 ? (
+            {data.predictions.length > 0 ? (
               <View style={styles.chartWrapper}>
-                <LinearGradient
-                  colors={["#020617", "#020617"]}
-                  style={styles.chartGradient}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
+                <Text style={styles.chartTitle}>Height (ft) vs Time (UTC)</Text>
+                <Svg
+                  width={chartInfo.chartWidth}
+                  height={chartInfo.chartHeight}
+                  style={{ alignSelf: "center" }}
                 >
-                  <Text style={styles.chartTitle}>Height (ft) vs Time (UTC)</Text>
-                  <LineChart
-                    data={chartData}
-                    thickness={2}
-                    color="#22d3ee"
-                    areaChart
-                    startFillColor="rgba(34,211,238,0.35)"
-                    endFillColor="rgba(15,23,42,0.1)"
-                    startOpacity={0.8}
-                    endOpacity={0.1}
-                    hideDataPoints
-                    yAxisColor="transparent"
-                    xAxisColor="#111827"
-                    xAxisLabelTextStyle={styles.axisLabel}
-                    yAxisTextStyle={styles.axisLabel}
-                    yAxisOffset={Math.floor(minY) - 1}
-                    maxValue={Math.ceil(maxY) + 1}
-                    noOfSections={4}
-                    backgroundColor="transparent"
+                  {/* Grid lines */}
+                  <SvgLine
+                    x1={0}
+                    y1={chartInfo.chartHeight / 2}
+                    x2={chartInfo.chartWidth}
+                    y2={chartInfo.chartHeight / 2}
+                    stroke="#1f2933"
+                    strokeWidth={1}
+                    strokeDasharray="4 4"
                   />
-                </LinearGradient>
+                  {/* Tide line */}
+                  {chartInfo.pointsString.length > 0 && (
+                    <Polyline
+                      points={chartInfo.pointsString}
+                      fill="none"
+                      stroke="#22d3ee"
+                      strokeWidth={2}
+                    />
+                  )}
+                  {/* X-axis labels */}
+                  {chartInfo.labels.map((l) => (
+                    <SvgText
+                      key={l.x + l.text}
+                      x={l.x}
+                      y={chartInfo.chartHeight - 4}
+                      fill="#9ca3af"
+                      fontSize={10}
+                      textAnchor="middle"
+                    >
+                      {l.text}
+                    </SvgText>
+                  ))}
+                </Svg>
+                <Text style={styles.axisNote}>
+                  Approximate curve; see table below for exact high/low tide times.
+                </Text>
               </View>
             ) : (
               <Text style={styles.infoText}>No predictions for this day.</Text>
@@ -168,12 +215,12 @@ const styles = StyleSheet.create({
   },
   chartWrapper: {
     borderRadius: 12,
-    overflow: "hidden",
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+    backgroundColor: "#020617",
+    borderWidth: 1,
+    borderColor: "#111827",
     marginBottom: 16,
-  },
-  chartGradient: {
-    paddingVertical: 12,
-    paddingHorizontal: 4,
   },
   chartTitle: {
     color: "#e5e7eb",
@@ -181,9 +228,11 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     textAlign: "center",
   },
-  axisLabel: {
-    color: "#9ca3af",
-    fontSize: 10,
+  axisNote: {
+    color: "#6b7280",
+    fontSize: 11,
+    marginTop: 4,
+    textAlign: "center",
   },
   table: {
     marginTop: 8,
