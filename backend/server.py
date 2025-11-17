@@ -191,6 +191,78 @@ async def list_tracks():
 
 
 # -------------------------
+# Waypoints Models & Routes
+# -------------------------
+class WaypointCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    lat: float
+    lon: float
+
+
+class WaypointUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+
+
+class Waypoint(BaseModel):
+    id: str
+    name: str
+    description: Optional[str] = None
+    lat: float
+    lon: float
+    created_at: datetime
+
+
+def waypoint_from_doc(doc: dict) -> Waypoint:
+    return Waypoint(
+        id=str(doc["_id"]),
+        name=doc["name"],
+        description=doc.get("description"),
+        lat=doc["lat"],
+        lon=doc["lon"],
+        created_at=doc["created_at"],
+    )
+
+
+@api_router.post("/waypoints", response_model=Waypoint)
+async def create_waypoint(payload: WaypointCreate):
+    now = datetime.utcnow()
+    doc = {
+        "name": payload.name,
+        "description": payload.description,
+        "lat": payload.lat,
+        "lon": payload.lon,
+        "created_at": now,
+    }
+    result = await db.waypoints.insert_one(doc)
+    doc["_id"] = result.inserted_id
+    return waypoint_from_doc(doc)
+
+
+@api_router.get("/waypoints", response_model=List[Waypoint])
+async def list_waypoints():
+    cursor = db.waypoints.find().sort("created_at", -1)
+    items: List[Waypoint] = []
+    async for doc in cursor:
+        items.append(waypoint_from_doc(doc))
+    return items
+
+
+@api_router.delete("/waypoints/{waypoint_id}")
+async def delete_waypoint(waypoint_id: str):
+    try:
+        obj_id = ObjectId(waypoint_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid waypoint id")
+
+    result = await db.waypoints.delete_one({"_id": obj_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Waypoint not found")
+    return {"deleted": True}
+
+
+# -------------------------
 # Tide (NOAA) Models & Routes
 # -------------------------
 class TideStation(BaseModel):

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
 import MapView, { Marker, UrlTile, PROVIDER_GOOGLE } from "react-native-maps";
 import * as Location from "expo-location";
 import * as FileSystem from "expo-file-system";
@@ -107,6 +107,30 @@ export default function ChartScreenNative() {
     }
   };
 
+  const handleAddWaypoint = async () => {
+    if (!location) {
+      Alert.alert("No position", "Waiting for a GPS position before creating a waypoint.");
+      return;
+    }
+    try {
+      const now = new Date();
+      const label = `WPT ${now.getHours().toString().padStart(2, "0")}:${now
+        .getMinutes()
+        .toString()
+        .padStart(2, "0")}`;
+      await api.post("/api/waypoints", {
+        name: label,
+        lat: location.coords.latitude,
+        lon: location.coords.longitude,
+      });
+      Alert.alert("Waypoint saved", `${label} stored.`);
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.log("Failed to create waypoint", e);
+      Alert.alert("Error", "Could not save waypoint.");
+    }
+  };
+
   const region = location
     ? {
         latitude: location.coords.latitude,
@@ -207,6 +231,9 @@ export default function ChartScreenNative() {
               {useOfflineTiles ? "Use Online" : "Use Offline"}
             </Text>
           </TouchableOpacity>
+          <TouchableOpacity style={styles.secondaryButton} onPress={handleAddWaypoint}>
+            <Text style={styles.secondaryButtonText}>Add WPT</Text>
+          </TouchableOpacity>
           <TouchableOpacity
             style={styles.secondaryButton}
             onPress={() => router.push("/chart/download")}
@@ -300,7 +327,7 @@ const styles = StyleSheet.create({
   },
   bottomBar: {
     flexDirection: "row",
-    paddingHorizontal: 12,
+    paddingHorizontal: 8,
     paddingVertical: 10,
     backgroundColor: GARMIN_PANEL,
     borderTopWidth: StyleSheet.hairlineWidth,
@@ -321,7 +348,7 @@ const styles = StyleSheet.create({
   },
   secondaryButton: {
     paddingVertical: 10,
-    paddingHorizontal: 12,
+    paddingHorizontal: 8,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "#4b5563",
