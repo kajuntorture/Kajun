@@ -244,6 +244,19 @@ export default function ChartScreenNative() {
       <View style={styles.container}>
         <View style={styles.topPanel}>
           <Text style={styles.heading}>CHART</Text>
+          
+          {activeRoute && activeRouteData && (
+            <View style={styles.routeInfoRow}>
+              <Text style={styles.routeName}>{activeRouteData.name}</Text>
+              <Text style={styles.routeStats}>
+                {activeRouteData.total_distance_nm.toFixed(1)} nm
+              </Text>
+              <Text style={[styles.routeStats, { marginLeft: 12 }]}>
+                ETA: {calculateETA(activeRouteData.total_distance_nm, currentSpeedKn)}
+              </Text>
+            </View>
+          )}
+          
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>SOG</Text>
             <Text style={styles.infoValue}>
