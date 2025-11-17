@@ -5,12 +5,15 @@ import { FlashList } from "@shopify/flash-list";
 import { useQuery } from "@tanstack/react-query";
 import api from "../../src/api/client";
 
-interface Track {
+interface Trip {
   id: string;
+  track_id: string;
   name?: string | null;
-  notes?: string | null;
   start_time: string;
   end_time?: string | null;
+  distance_nm: number;
+  avg_speed_kn: number;
+  max_speed_kn: number;
 }
 
 function formatDate(iso: string) {
@@ -37,32 +40,32 @@ function formatDuration(startIso: string, endIso?: string | null) {
 }
 
 export default function TripsScreen() {
-  const { data, isLoading, isError, refetch } = useQuery<Track[], Error>({
-    queryKey: ["tracks"],
+  const { data, isLoading, isError, refetch } = useQuery<Trip[], Error>({
+    queryKey: ["trips"],
     queryFn: async () => {
-      const res = await api.get<Track[]>("/api/tracks");
+      const res = await api.get<Trip[]>("/api/trips");
       return res.data;
     },
   });
 
-  const tracks = data ?? [];
+  const trips = data ?? [];
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <Text style={styles.heading}>TRACKS & TRIPS</Text>
+        <Text style={styles.heading}>TRIPS</Text>
 
         {isLoading && (
           <View style={styles.center}>
             <ActivityIndicator color="#22d3ee" />
-            <Text style={styles.infoText}>Loading recent tracks…</Text>
+            <Text style={styles.infoText}>Loading trips…</Text>
           </View>
         )}
 
         {isError && !isLoading && (
           <View style={styles.center}>
             <Text style={styles.errorText}>
-              Could not load tracks. Check connection and try again.
+              Could not load trips. Check connection and try again.
             </Text>
             <Text style={[styles.infoText, { marginTop: 4 }]} onPress={() => refetch()}>
               Tap here to retry.
@@ -70,21 +73,21 @@ export default function TripsScreen() {
           </View>
         )}
 
-        {!isLoading && !isError && tracks.length === 0 && (
+        {!isLoading && !isError && trips.length === 0 && (
           <View style={styles.center}>
-            <Text style={styles.infoText}>No tracks recorded yet.</Text>
-            <Text style={styles.infoText}>Start a track from the Chart screen.</Text>
+            <Text style={styles.infoText}>No trips yet.</Text>
+            <Text style={styles.infoText}>Start and stop a track from the Chart screen.</Text>
           </View>
         )}
 
-        {!isLoading && !isError && tracks.length > 0 && (
+        {!isLoading && !isError && trips.length > 0 && (
           <FlashList
-            data={tracks}
+            data={trips}
             keyExtractor={(item) => item.id}
-            estimatedItemSize={72}
+            estimatedItemSize={80}
             contentContainerStyle={styles.listContent}
             renderItem={({ item }) => {
-              const title = item.name || "Recorded track";
+              const title = item.name || "Recorded trip";
               return (
                 <View style={styles.row}>
                   <View style={{ flex: 1 }}>
@@ -92,12 +95,9 @@ export default function TripsScreen() {
                     <Text style={styles.sub}>{formatDate(item.start_time)}</Text>
                   </View>
                   <View style={styles.rightCol}>
+                    <Text style={styles.distance}>{item.distance_nm.toFixed(2)} nm</Text>
                     <Text style={styles.duration}>{formatDuration(item.start_time, item.end_time)}</Text>
-                    {item.end_time ? (
-                      <Text style={styles.statusDone}>Finished</Text>
-                    ) : (
-                      <Text style={styles.statusLive}>Live</Text>
-                    )}
+                    <Text style={styles.speed}>{`${item.avg_speed_kn.toFixed(1)} kn avg / ${item.max_speed_kn.toFixed(1)} kn max`}</Text>
                   </View>
                 </View>
               );
@@ -164,18 +164,17 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
     marginLeft: 12,
   },
-  duration: {
+  distance: {
     color: "#e5e7eb",
     fontSize: 14,
-    fontWeight: "500",
+    fontWeight: "600",
   },
-  statusDone: {
-    color: "#6ee7b7",
-    fontSize: 11,
-    marginTop: 2,
+  duration: {
+    color: "#e5e7eb",
+    fontSize: 12,
   },
-  statusLive: {
-    color: "#fbbf24",
+  speed: {
+    color: "#9ca3af",
     fontSize: 11,
     marginTop: 2,
   },

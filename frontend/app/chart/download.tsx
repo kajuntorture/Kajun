@@ -12,6 +12,7 @@ import {
   ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useLocalSearchParams } from "expo-router";
 import * as FileSystem from "expo-file-system";
 
 const GARMIN_BG = "#020617";
@@ -36,10 +37,19 @@ function deg2tile(lat: number, lon: number, zoom: number) {
 }
 
 export default function ChartDownloadScreen() {
-  const [north, setNorth] = useState("37.9");
-  const [south, setSouth] = useState("37.6");
-  const [east, setEast] = useState("-122.3");
-  const [west, setWest] = useState("-122.6");
+  const params = useLocalSearchParams<{ lat?: string; lon?: string }>();
+  const centerLat = params.lat ? parseFloat(params.lat) : 37.75;
+  const centerLon = params.lon ? parseFloat(params.lon) : -122.45;
+
+  const initialNorth = (centerLat + 0.2).toFixed(4);
+  const initialSouth = (centerLat - 0.2).toFixed(4);
+  const initialWest = (centerLon - 0.3).toFixed(4);
+  const initialEast = (centerLon + 0.3).toFixed(4);
+
+  const [north, setNorth] = useState(initialNorth);
+  const [south, setSouth] = useState(initialSouth);
+  const [east, setEast] = useState(initialEast);
+  const [west, setWest] = useState(initialWest);
   const [minZoom, setMinZoom] = useState("10");
   const [maxZoom, setMaxZoom] = useState("14");
   const [isDownloading, setIsDownloading] = useState(false);
@@ -139,7 +149,8 @@ export default function ChartDownloadScreen() {
         <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
           <Text style={styles.heading}>OFFLINE CHART DOWNLOAD</Text>
           <Text style={styles.sub}>
-            Define a bounding box and zoom range to cache OpenStreetMap tiles locally for offline use.
+            The bounding box is pre-filled around your current location when available. Adjust as needed
+            and start the download.
           </Text>
 
           <Text style={styles.label}>North latitude</Text>

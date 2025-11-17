@@ -11,6 +11,7 @@ import uuid
 from datetime import datetime, date
 import httpx
 from bson import ObjectId
+import math
 
 
 ROOT_DIR = Path(__file__).parent
@@ -71,7 +72,7 @@ async def health_check():
 
 
 # -------------------------
-# Track Models & Routes
+# Track & Trip Models & Routes
 # -------------------------
 class TrackPoint(BaseModel):
     timestamp: datetime
@@ -97,6 +98,78 @@ class Track(BaseModel):
 
 class TrackPointBatch(BaseModel):
     points: List[TrackPoint]
+
+
+class Trip(BaseModel):
+    id: str
+    track_id: str
+    name: Optional[str] = None
+    start_time: datetime
+    end_time: Optional[datetime] = None
+    distance_nm: float
+    avg_speed_kn: float
+    max_speed_kn: float
+
+
+def haversine_nm(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """Great-circle distance between two points in nautical miles."""
+    r_km = 6371.0
+    km_per_nm = 1.852
+    phi1 = math.radians(lat1)
+    phi2 = math.radians(lat2)
+    dphi = math.radians(lat2 - lat1)
+    dlambda = math.radians(lon2 - lon1)
+    a = (
+        math.sin(dphi / 2) ** 2
+        + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2) ** 2
+    )
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    d_km = r_km * c
+    return d_km / km_per_nm
+
+
+async def compute_and_store_trip(track_doc: dict):
+    """Compute trip stats from track points and upsert into trips collection."""
+    track_id = track_doc["_id"]
+    # Load points in time order
+    points = await db.track_points.find({"track_id": track_id}).sort("timestamp", 1).to_list(10000)
+    if not points:
+        distance_nm = 0.0
+        avg_speed_kn = 0.0
+        max_speed_kn = 0.0
+    else:
+        distance_nm = 0.0
+        max_speed_kn = 0.0
+        for i in range(len(points) - 1):
+            p1 = points[i]
+            p2 = points[i + 1]
+            distance_nm += haversine_nm(p1["lat"], p1["lon"], p2["lat"], p2["lon"])
+        speeds = [p["speed_kn"] for p in points if p.get("speed_kn") is not None]
+        max_speed_kn = max(speeds) if speeds else 0.0
+        start_time = track_doc["start_time"]
+        end_time = track_doc.get("end_time") or points[-1]["timestamp"]
+        duration_hours = max(0.0, (end_time - start_time).total_seconds() / 3600.0)
+        avg_speed_kn = distance_nm / duration_hours if duration_hours > 0 else 0.0
+
+    trip_doc = {
+        "track_id": track_id,
+        "name": track_doc.get("name"),
+        "start_time": track_doc["start_time"],
+        "end_time": track_doc.get("end_time"),
+        "distance_nm": distance_nm,
+        "avg_speed_kn": avg_speed_kn,
+        "max_speed_kn": max_speed_kn,
+    }
+
+    result = await db.trips.update_one(
+        {"track_id": track_id}, {"$set": trip_doc}, upsert=True
+    )
+    if result.upserted_id is not None:
+        trip_doc["_id"] = result.upserted_id
+    else:
+        existing = await db.trips.find_one({"track_id": track_id})
+        if existing:
+            trip_doc["_id"] = existing["_id"]
 
 
 @api_router.post("/tracks", response_model=Track)
@@ -164,6 +237,9 @@ async def end_track(track_id: str, end_time: Optional[datetime] = None):
         raise HTTPException(status_code=404, detail="Track not found")
 
     updated = await db.tracks.find_one({"_id": track_obj_id})
+    # Compute and store trip stats automatically
+    await compute_and_store_trip(updated)
+
     return Track(
         id=str(updated["_id"]),
         name=updated.get("name"),
@@ -188,6 +264,48 @@ async def list_tracks():
             )
         )
     return items
+
+
+@api_router.get("/trips", response_model=List[Trip])
+async def list_trips():
+    cursor = db.trips.find().sort("start_time", -1)
+    items: List[Trip] = []
+    async for doc in cursor:
+        items.append(
+            Trip(
+                id=str(doc["_id"]),
+                track_id=str(doc["track_id"]),
+                name=doc.get("name"),
+                start_time=doc["start_time"],
+                end_time=doc.get("end_time"),
+                distance_nm=float(doc.get("distance_nm", 0.0)),
+                avg_speed_kn=float(doc.get("avg_speed_kn", 0.0)),
+                max_speed_kn=float(doc.get("max_speed_kn", 0.0)),
+            )
+        )
+    return items
+
+
+@api_router.get("/trips/{trip_id}", response_model=Trip)
+async def get_trip(trip_id: str):
+    try:
+        obj_id = ObjectId(trip_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid trip id")
+
+    doc = await db.trips.find_one({"_id": obj_id})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Trip not found")
+    return Trip(
+        id=str(doc["_id"]),
+        track_id=str(doc["track_id"]),
+        name=doc.get("name"),
+        start_time=doc["start_time"],
+        end_time=doc.get("end_time"),
+        distance_nm=float(doc.get("distance_nm", 0.0)),
+        avg_speed_kn=float(doc.get("avg_speed_kn", 0.0)),
+        max_speed_kn=float(doc.get("max_speed_kn", 0.0)),
+    )
 
 
 # -------------------------
