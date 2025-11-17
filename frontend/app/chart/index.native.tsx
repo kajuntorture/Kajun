@@ -321,6 +321,32 @@ export default function ChartScreenNative() {
                 shouldReplaceMapContent={false}
               />
 
+              {/* Active Route Polyline */}
+              {activeRouteData && activeRouteData.waypoints.length > 1 && PolylineComp && (
+                <PolylineComp
+                  coordinates={activeRouteData.waypoints.map((w) => ({
+                    latitude: w.lat,
+                    longitude: w.lon,
+                  }))}
+                  strokeColor="#c026d3"
+                  strokeWidth={3}
+                  lineDashPattern={[0]}
+                />
+              )}
+
+              {/* Active Route Waypoint Markers */}
+              {activeRouteData && activeRouteData.waypoints.map((w, idx) => (
+                <MarkerComp
+                  key={`route-wpt-${w.id}`}
+                  coordinate={{ latitude: w.lat, longitude: w.lon }}
+                  anchor={{ x: 0.5, y: 1 }}
+                >
+                  <View style={styles.routeWptMarker}>
+                    <Text style={styles.routeWptText}>{idx + 1}</Text>
+                  </View>
+                </MarkerComp>
+              ))}
+
               {location && (
                 <MarkerComp
                   coordinate={{
