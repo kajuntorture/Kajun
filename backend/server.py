@@ -473,6 +473,62 @@ async def delete_route(route_id: str):
     return {"deleted": True}
 
 
+class RouteWithWaypoints(BaseModel):
+    id: str
+    name: str
+    description: Optional[str] = None
+    waypoints: List[Waypoint]
+    total_distance_nm: float
+    created_at: datetime
+
+
+@api_router.get("/routes/{route_id}/details", response_model=RouteWithWaypoints)
+async def get_route_with_waypoints(route_id: str):
+    """Get a route with full waypoint details and calculate total distance."""
+    try:
+        obj_id = ObjectId(route_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid route id")
+
+    route_doc = await db.routes.find_one({"_id": obj_id})
+    if not route_doc:
+        raise HTTPException(status_code=404, detail="Route not found")
+
+    waypoint_ids = route_doc.get("waypoint_ids", [])
+    if not waypoint_ids:
+        return RouteWithWaypoints(
+            id=str(route_doc["_id"]),
+            name=route_doc["name"],
+            description=route_doc.get("description"),
+            waypoints=[],
+            total_distance_nm=0.0,
+            created_at=route_doc["created_at"],
+        )
+
+    # Fetch all waypoints in order
+    waypoints_list = []
+    for wid in waypoint_ids:
+        wpt_doc = await db.waypoints.find_one({"_id": wid})
+        if wpt_doc:
+            waypoints_list.append(waypoint_from_doc(wpt_doc))
+
+    # Calculate total distance between consecutive waypoints
+    total_distance_nm = 0.0
+    for i in range(len(waypoints_list) - 1):
+        w1 = waypoints_list[i]
+        w2 = waypoints_list[i + 1]
+        total_distance_nm += haversine_nm(w1.lat, w1.lon, w2.lat, w2.lon)
+
+    return RouteWithWaypoints(
+        id=str(route_doc["_id"]),
+        name=route_doc["name"],
+        description=route_doc.get("description"),
+        waypoints=waypoints_list,
+        total_distance_nm=total_distance_nm,
+        created_at=route_doc["created_at"],
+    )
+
+
 # -------------------------
 # Tide (NOAA) Models & Routes
 # -------------------------
