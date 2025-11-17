@@ -19,6 +19,7 @@ const GARMIN_ACCENT = "#22d3ee";
 const GARMIN_TEXT = "#e5e7eb";
 
 const TILE_BASE_URL = "https://a.tile.openstreetmap.org";
+const MAX_TILES_PER_BATCH = 2000; // safety limit to avoid huge downloads
 
 function buildTileUrl(z: number, x: number, y: number) {
   return `${TILE_BASE_URL}/${z}/${x}/${y}.png`;
@@ -28,7 +29,11 @@ function deg2tile(lat: number, lon: number, zoom: number) {
   const latRad = (lat * Math.PI) / 180;
   const n = 2 ** zoom;
   const xtile = Math.floor(((lon + 180) / 360) * n);
-  const ytile = Math.floor((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2 * n);
+  const ytile = Math.floor((
+    1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI
+  ) /
+    2 /
+    n);
   return { x: xtile, y: ytile };
 }
 
@@ -84,6 +89,14 @@ export default function ChartDownloadScreen() {
       return;
     }
 
+    if (downloads.length > MAX_TILES_PER_BATCH) {
+      Alert.alert(
+        "Area too large",
+        `This selection would download ${downloads.length} tiles. Please reduce the area or zoom range (try zoom 10–12).`
+      );
+      return;
+    }
+
     setTotal(downloads.length);
     setProgress(0);
     setIsDownloading(true);
@@ -92,17 +105,28 @@ export default function ChartDownloadScreen() {
       for (let i = 0; i < downloads.length; i += 1) {
         const { url, path } = downloads[i];
         const dir = path.substring(0, path.lastIndexOf("/"));
-        await FileSystem.makeDirectoryAsync(dir, { intermediates: true });
+        try {
+          await FileSystem.makeDirectoryAsync(dir, { intermediates: true });
+        } catch (mkdirErr) {
+          // eslint-disable-next-line no-console
+          console.log("Failed to create directory", dir, mkdirErr);
+        }
         try {
           await FileSystem.downloadAsync(url, path);
-        } catch {
-          // ignore individual tile failures
+        } catch (downloadErr) {
+          // eslint-disable-next-line no-console
+          console.log("Tile download failed", url, downloadErr);
         }
         setProgress(i + 1);
       }
       Alert.alert("Download complete", `Stored ${downloads.length} tiles for offline use.`);
-    } catch (e) {
-      Alert.alert("Download failed", "An error occurred while downloading tiles.");
+    } catch (e: any) {
+      // eslint-disable-next-line no-console
+      console.log("Download error", e);
+      Alert.alert(
+        "Download failed",
+        e?.message ? `Error: ${String(e.message)}` : "An error occurred while downloading tiles."
+      );
     } finally {
       setIsDownloading(false);
     }
