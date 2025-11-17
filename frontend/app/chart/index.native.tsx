@@ -41,6 +41,8 @@ export default function ChartScreenNative() {
 
   const { currentTrackId, isTracking, startTrack, stopTrack, addPoint, points, reset } =
     useTrackStore();
+  
+  const { activeRoute } = useRouteStore();
 
   const {
     data: waypointData,
@@ -50,6 +52,18 @@ export default function ChartScreenNative() {
     enabled: showWaypoints,
     queryFn: async () => {
       const res = await api.get<Waypoint[]>("/api/waypoints");
+      return res.data;
+    },
+  });
+
+  const {
+    data: activeRouteData,
+    isLoading: loadingRoute,
+  } = useQuery<RouteWithWaypoints, Error>({
+    queryKey: ["active-route", activeRoute?.id],
+    enabled: !!activeRoute?.id,
+    queryFn: async () => {
+      const res = await api.get<RouteWithWaypoints>(`/api/routes/${activeRoute!.id}/details`);
       return res.data;
     },
   });
