@@ -4,6 +4,7 @@ import MapView, { Marker, UrlTile, PROVIDER_GOOGLE } from "react-native-maps";
 import * as Location from "expo-location";
 import * as FileSystem from "expo-file-system";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useQuery } from "@tanstack/react-query";
 import api from "../../src/api/client";
 import { useTrackStore } from "../../src/store/useTrackStore";
 import { useRouter } from "expo-router";
@@ -15,15 +16,37 @@ const GARMIN_TEXT = "#e5e7eb"; // light gray
 
 const TILE_ROOT = `${FileSystem.documentDirectory}tiles`;
 
+interface Waypoint {
+  id: string;
+  name: string;
+  lat: number;
+  lon: number;
+}
+
 export default function ChartScreenNative() {
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [requesting, setRequesting] = useState(true);
   const [isOfflinePreferred, setIsOfflinePreferred] = useState(false);
+  const [showWaypoints, setShowWaypoints] = useState(true);
   const router = useRouter();
 
   const { currentTrackId, isTracking, startTrack, stopTrack, addPoint, points, reset } =
     useTrackStore();
+
+  const {
+    data: waypointData,
+    isLoading: loadingWpts,
+  } = useQuery<Waypoint[], Error>({
+    queryKey: ["chart-waypoints"],
+    enabled: showWaypoints,
+    queryFn: async () => {
+      const res = await api.get<Waypoint[]>("/api/waypoints");
+      return res.data;
+    },
+  });
+
+  const waypoints = showWaypoints && waypointData ? waypointData : [];
 
   useEffect(() => {
     (async () => {
@@ -171,6 +194,13 @@ export default function ChartScreenNative() {
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Tiles</Text>
             <Text style={styles.infoValue}>{useOfflineTiles ? "Offline" : "Online"}</Text>
+            <Text style={[styles.infoLabel, { marginLeft: 24 }]}>WPT</Text>
+            <Text
+              style={[styles.infoValue, { textDecorationLine: "underline" }]}
+              onPress={() => setShowWaypoints((prev) => !prev)}
+            >
+              {showWaypoints ? "On" : "Off"}
+            </Text>
           </View>
         </View>
 
@@ -216,6 +246,19 @@ export default function ChartScreenNative() {
                 </View>
               </Marker>
             )}
+
+            {showWaypoints && !loadingWpts &&
+              waypoints.map((w) => (
+                <Marker
+                  key={w.id}
+                  coordinate={{ latitude: w.lat, longitude: w.lon }}
+                  anchor={{ x: 0.5, y: 1 }}
+                >
+                  <View style={styles.wptMarker}>
+                    <Text style={styles.wptText}>{w.name}</Text>
+                  </View>
+                </Marker>
+              ))}
           </MapView>
         </View>
 
@@ -324,6 +367,18 @@ const styles = StyleSheet.create({
     height: 10,
     borderRadius: 5,
     backgroundColor: GARMIN_ACCENT,
+  },
+  wptMarker: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    backgroundColor: "rgba(15,23,42,0.9)",
+    borderWidth: 1,
+    borderColor: "#22d3ee",
+  },
+  wptText: {
+    color: "#e5e7eb",
+    fontSize: 10,
   },
   bottomBar: {
     flexDirection: "row",
