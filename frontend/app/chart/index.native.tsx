@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
-import MapView, { Marker, UrlTile, PROVIDER_GOOGLE } from "react-native-maps";
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, Platform } from "react-native";
 import * as Location from "expo-location";
 import * as FileSystem from "expo-file-system";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -29,6 +28,7 @@ export default function ChartScreenNative() {
   const [requesting, setRequesting] = useState(true);
   const [isOfflinePreferred, setIsOfflinePreferred] = useState(false);
   const [showWaypoints, setShowWaypoints] = useState(true);
+  const [mapError, setMapError] = useState<string | null>(null);
   const router = useRouter();
 
   const { currentTrackId, isTracking, startTrack, stopTrack, addPoint, points, reset } =
@@ -173,6 +173,29 @@ export default function ChartScreenNative() {
   const offlineUrlTemplate = `${TILE_ROOT}/{z}/{x}/{y}.png`;
   const onlineUrlTemplate = "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png";
 
+  // Dynamically require react-native-maps so we can gracefully handle native incompatibility
+  let MapViewComp: any = null;
+  let MarkerComp: any = null;
+  let UrlTileComp: any = null;
+  let PROVIDER_GOOGLE_CONST: any = null;
+
+  if (Platform.OS === "ios" || Platform.OS === "android") {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const Maps = require("react-native-maps");
+      MapViewComp = Maps.default;
+      MarkerComp = Maps.Marker;
+      UrlTileComp = Maps.UrlTile;
+      PROVIDER_GOOGLE_CONST = Maps.PROVIDER_GOOGLE;
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.log("react-native-maps not available", e);
+      if (!mapError) {
+        setMapError("Map module not available in this build.");
+      }
+    }
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -212,54 +235,62 @@ export default function ChartScreenNative() {
             </View>
           )}
 
-          <MapView
-            style={StyleSheet.absoluteFill}
-            provider={PROVIDER_GOOGLE}
-            initialRegion={region}
-            region={region}
-            customMapStyle={garminDarkMapStyle}
-            showsCompass={false}
-            showsScale={false}
-            rotateEnabled
-            pitchEnabled={false}
-            toolbarEnabled={false}
-          >
-            <UrlTile
-              urlTemplate={useOfflineTiles ? offlineUrlTemplate : onlineUrlTemplate}
-              maximumZ={19}
-              flipY={false}
-              tileSize={256}
-              zIndex={-1}
-              shouldReplaceMapContent={false}
-            />
+          {!MapViewComp || !UrlTileComp || !MarkerComp || !PROVIDER_GOOGLE_CONST ? (
+            <View style={[StyleSheet.absoluteFill, styles.loadingOverlay]}>
+              <Text style={styles.loadingText}>
+                {mapError ?? "Map module not available in this Expo Go build. Chart data (SOG/COG, waypoints) still works."}
+              </Text>
+            </View>
+          ) : (
+            <MapViewComp
+              style={StyleSheet.absoluteFill}
+              provider={PROVIDER_GOOGLE_CONST}
+              initialRegion={region}
+              region={region}
+              customMapStyle={garminDarkMapStyle}
+              showsCompass={false}
+              showsScale={false}
+              rotateEnabled
+              pitchEnabled={false}
+              toolbarEnabled={false}
+            >
+              <UrlTileComp
+                urlTemplate={useOfflineTiles ? offlineUrlTemplate : onlineUrlTemplate}
+                maximumZ={19}
+                flipY={false}
+                tileSize={256}
+                zIndex={-1}
+                shouldReplaceMapContent={false}
+              />
 
-            {location && (
-              <Marker
-                coordinate={{
-                  latitude: location.coords.latitude,
-                  longitude: location.coords.longitude,
-                }}
-                anchor={{ x: 0.5, y: 0.5 }}
-              >
-                <View style={styles.vesselMarkerOuter}>
-                  <View style={styles.vesselMarkerInner} />
-                </View>
-              </Marker>
-            )}
-
-            {showWaypoints && !loadingWpts &&
-              waypoints.map((w) => (
-                <Marker
-                  key={w.id}
-                  coordinate={{ latitude: w.lat, longitude: w.lon }}
-                  anchor={{ x: 0.5, y: 1 }}
+              {location && (
+                <MarkerComp
+                  coordinate={{
+                    latitude: location.coords.latitude,
+                    longitude: location.coords.longitude,
+                  }}
+                  anchor={{ x: 0.5, y: 0.5 }}
                 >
-                  <View style={styles.wptMarker}>
-                    <Text style={styles.wptText}>{w.name}</Text>
+                  <View style={styles.vesselMarkerOuter}>
+                    <View style={styles.vesselMarkerInner} />
                   </View>
-                </Marker>
-              ))}
-          </MapView>
+                </MarkerComp>
+              )}
+
+              {showWaypoints && !loadingWpts &&
+                waypoints.map((w) => (
+                  <MarkerComp
+                    key={w.id}
+                    coordinate={{ latitude: w.lat, longitude: w.lon }}
+                    anchor={{ x: 0.5, y: 1 }}
+                  >
+                    <View style={styles.wptMarker}>
+                      <Text style={styles.wptText}>{w.name}</Text>
+                    </View>
+                  </MarkerComp>
+                ))}
+            </MapViewComp>
+          )}
         </View>
 
         <View style={styles.bottomBar}>
@@ -351,6 +382,8 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 8,
     color: GARMIN_TEXT,
+    textAlign: "center",
+    paddingHorizontal: 24,
   },
   vesselMarkerOuter: {
     width: 28,
