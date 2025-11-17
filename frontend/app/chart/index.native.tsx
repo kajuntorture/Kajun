@@ -6,6 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useQuery } from "@tanstack/react-query";
 import api from "../../src/api/client";
 import { useTrackStore } from "../../src/store/useTrackStore";
+import { useRouteStore } from "../../src/store/useRouteStore";
 import { useRouter } from "expo-router";
 
 const GARMIN_BG = "#020617"; // near-black navy
