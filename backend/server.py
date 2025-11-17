@@ -191,7 +191,7 @@ async def list_tracks():
 
 
 # -------------------------
-# Waypoints Models & Routes
+# Waypoints & Routes Models & Routes
 # -------------------------
 class WaypointCreate(BaseModel):
     name: str
@@ -211,6 +211,25 @@ class Waypoint(BaseModel):
     description: Optional[str] = None
     lat: float
     lon: float
+    created_at: datetime
+
+
+class RouteWaypoint(BaseModel):
+    waypoint_id: str
+    order: int
+
+
+class RouteCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    waypoint_ids: List[str]
+
+
+class Route(BaseModel):
+    id: str
+    name: str
+    description: Optional[str] = None
+    waypoint_ids: List[str]
     created_at: datetime
 
 
@@ -259,6 +278,80 @@ async def delete_waypoint(waypoint_id: str):
     result = await db.waypoints.delete_one({"_id": obj_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Waypoint not found")
+    return {"deleted": True}
+
+
+def route_from_doc(doc: dict) -> Route:
+    return Route(
+        id=str(doc["_id"]),
+        name=doc["name"],
+        description=doc.get("description"),
+        waypoint_ids=[str(wid) for wid in doc.get("waypoint_ids", [])],
+        created_at=doc["created_at"],
+    )
+
+
+@api_router.post("/routes", response_model=Route)
+async def create_route(payload: RouteCreate):
+    if not payload.waypoint_ids or len(payload.waypoint_ids) < 2:
+        raise HTTPException(status_code=400, detail="Route must have at least two waypoints")
+
+    try_ids = []
+    for wid in payload.waypoint_ids:
+        try:
+            try_ids.append(ObjectId(wid))
+        except Exception:
+            raise HTTPException(status_code=400, detail=f"Invalid waypoint id: {wid}")
+
+    # Ensure all waypoints exist
+    count = await db.waypoints.count_documents({"_id": {"$in": try_ids}})
+    if count != len(try_ids):
+        raise HTTPException(status_code=400, detail="One or more waypoints do not exist")
+
+    now = datetime.utcnow()
+    doc = {
+        "name": payload.name,
+        "description": payload.description,
+        "waypoint_ids": try_ids,
+        "created_at": now,
+    }
+    result = await db.routes.insert_one(doc)
+    doc["_id"] = result.inserted_id
+    return route_from_doc(doc)
+
+
+@api_router.get("/routes", response_model=List[Route])
+async def list_routes():
+    cursor = db.routes.find().sort("created_at", -1)
+    items: List[Route] = []
+    async for doc in cursor:
+        items.append(route_from_doc(doc))
+    return items
+
+
+@api_router.get("/routes/{route_id}", response_model=Route)
+async def get_route(route_id: str):
+    try:
+        obj_id = ObjectId(route_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid route id")
+
+    doc = await db.routes.find_one({"_id": obj_id})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Route not found")
+    return route_from_doc(doc)
+
+
+@api_router.delete("/routes/{route_id}")
+async def delete_route(route_id: str):
+    try:
+        obj_id = ObjectId(route_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid route id")
+
+    result = await db.routes.delete_one({"_id": obj_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Route not found")
     return {"deleted": True}
 
 
