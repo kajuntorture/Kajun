@@ -520,6 +520,21 @@ const styles = StyleSheet.create({
     color: "#e5e7eb",
     fontSize: 10,
   },
+  routeWptMarker: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "#c026d3",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
+    borderColor: "#e9d5ff",
+  },
+  routeWptText: {
+    color: "#fff",
+    fontSize: 11,
+    fontWeight: "700",
+  },
   bottomBar: {
     flexDirection: "row",
     paddingHorizontal: 8,
