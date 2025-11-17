@@ -216,6 +216,7 @@ export default function ChartScreenNative() {
   let MapViewComp: any = null;
   let MarkerComp: any = null;
   let UrlTileComp: any = null;
+  let PolylineComp: any = null;
   let PROVIDER_GOOGLE_CONST: any = null;
 
   if (Platform.OS === "ios" || Platform.OS === "android") {
@@ -225,6 +226,7 @@ export default function ChartScreenNative() {
       MapViewComp = Maps.default;
       MarkerComp = Maps.Marker;
       UrlTileComp = Maps.UrlTile;
+      PolylineComp = Maps.Polyline;
       PROVIDER_GOOGLE_CONST = Maps.PROVIDER_GOOGLE;
     } catch (e) {
       // eslint-disable-next-line no-console
