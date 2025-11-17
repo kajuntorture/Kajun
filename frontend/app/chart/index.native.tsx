@@ -2,21 +2,41 @@ import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
 import MapView, { Marker, UrlTile, PROVIDER_GOOGLE } from "react-native-maps";
 import * as Location from "expo-location";
+import * as FileSystem from "expo-file-system";
 import { SafeAreaView } from "react-native-safe-area-context";
 import api from "../../src/api/client";
 import { useTrackStore } from "../../src/store/useTrackStore";
+import NetInfo from "@react-native-netinfo/netinfo";
+import { useRouter } from "expo-router";
 
 const GARMIN_BG = "#020617"; // near-black navy
 const GARMIN_PANEL = "#020617";
 const GARMIN_ACCENT = "#22d3ee"; // cyan
 const GARMIN_TEXT = "#e5e7eb"; // light gray
 
+const TILE_ROOT = `${FileSystem.documentDirectory}tiles`;
+
+function stringifyTemplate(template: string, z: number, x: number, y: number) {
+  return template.replace("{z}", String(z)).replace("{x}", String(x)).replace("{y}", String(y));
+}
+
 export default function ChartScreenNative() {
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [requesting, setRequesting] = useState(true);
+  const [isOfflinePreferred, setIsOfflinePreferred] = useState(false);
+  const [isNetworkOnline, setIsNetworkOnline] = useState(true);
+  const router = useRouter();
+
   const { currentTrackId, isTracking, startTrack, stopTrack, addPoint, points, reset } =
     useTrackStore();
+
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      setIsNetworkOnline(!!state.isConnected && !!state.isInternetReachable);
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -114,6 +134,11 @@ export default function ChartScreenNative() {
         longitudeDelta: 0.2,
       };
 
+  const useOfflineTiles = isOfflinePreferred || !isNetworkOnline;
+
+  const offlineUrlTemplate = `${TILE_ROOT}/{z}/{x}/{y}.png`;
+  const onlineUrlTemplate = "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png";
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -131,6 +156,10 @@ export default function ChartScreenNative() {
                 : "--"}
               °
             </Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Tiles</Text>
+            <Text style={styles.infoValue}>{useOfflineTiles ? "Offline" : "Online"}</Text>
           </View>
         </View>
 
@@ -155,11 +184,12 @@ export default function ChartScreenNative() {
             toolbarEnabled={false}
           >
             <UrlTile
-              urlTemplate="https://a.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              urlTemplate={useOfflineTiles ? offlineUrlTemplate : onlineUrlTemplate}
               maximumZ={19}
               flipY={false}
               tileSize={256}
               zIndex={-1}
+              shouldReplaceMapContent={false}
             />
 
             {location && (
@@ -182,11 +212,19 @@ export default function ChartScreenNative() {
           <TouchableOpacity style={styles.primaryButton} onPress={handleToggleTrack}>
             <Text style={styles.primaryButtonText}>{isTracking ? "Stop Track" : "Start Track"}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.secondaryButton}>
-            <Text style={styles.secondaryButtonText}>Add WPT</Text>
+          <TouchableOpacity
+            style={styles.secondaryButton}
+            onPress={() => setIsOfflinePreferred((prev) => !prev)}
+          >
+            <Text style={styles.secondaryButtonText}>
+              {useOfflineTiles ? "Use Online" : "Use Offline"}
+            </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.secondaryButton}>
-            <Text style={styles.secondaryButtonText}>Center</Text>
+          <TouchableOpacity
+            style={styles.secondaryButton}
+            onPress={() => router.push("/chart/download")}
+          >
+            <Text style={styles.secondaryButtonText}>Download</Text>
           </TouchableOpacity>
         </View>
 
@@ -226,7 +264,7 @@ const styles = StyleSheet.create({
   infoRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 8,
+    marginTop: 4,
   },
   infoLabel: {
     color: "#9ca3af",
@@ -234,7 +272,7 @@ const styles = StyleSheet.create({
   },
   infoValue: {
     color: GARMIN_TEXT,
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "600",
     marginLeft: 4,
   },
