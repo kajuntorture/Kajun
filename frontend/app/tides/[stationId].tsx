@@ -92,7 +92,7 @@ export default function TideDetailScreen() {
 
         {isLoading && (
           <View style={styles.center}>
-            <ActivityIndicator color="#22d3ee" />
+            <ActivityIndicator color="#ff6b1a" />
             <Text style={styles.infoText}>Loading predictions…</Text>
           </View>
         )}
@@ -130,7 +130,7 @@ export default function TideDetailScreen() {
                     <Polyline
                       points={chartInfo.pointsString}
                       fill="none"
-                      stroke="#22d3ee"
+                      stroke="#ff6b1a"
                       strokeWidth={2}
                     />
                   )}
@@ -140,7 +140,7 @@ export default function TideDetailScreen() {
                       key={l.x + l.text}
                       x={l.x}
                       y={chartInfo.chartHeight - 4}
-                      fill="#9ca3af"
+                      fill="#8a9077"
                       fontSize={10}
                       textAnchor="middle"
                     >
@@ -180,7 +180,7 @@ export default function TideDetailScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#020617",
+    backgroundColor: "#2d3a1f",
   },
   container: {
     flex: 1,
@@ -188,13 +188,13 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   heading: {
-    color: "#22d3ee",
+    color: "#ff6b1a",
     fontSize: 18,
     fontWeight: "600",
     marginBottom: 12,
   },
   subHeading: {
-    color: "#e5e7eb",
+    color: "#ff8c42",
     fontSize: 14,
     marginBottom: 8,
   },
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   infoText: {
-    color: "#9ca3af",
+    color: "#8a9077",
     fontSize: 14,
     textAlign: "center",
   },
@@ -217,13 +217,13 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 8,
     paddingHorizontal: 8,
-    backgroundColor: "#020617",
+    backgroundColor: "#2d3a1f",
     borderWidth: 1,
     borderColor: "#111827",
     marginBottom: 16,
   },
   chartTitle: {
-    color: "#e5e7eb",
+    color: "#ff8c42",
     fontSize: 12,
     marginBottom: 8,
     textAlign: "center",
@@ -245,16 +245,16 @@ const styles = StyleSheet.create({
   },
   cellTime: {
     flex: 1,
-    color: "#e5e7eb",
+    color: "#ff8c42",
   },
   cellHeight: {
     flex: 1,
-    color: "#e5e7eb",
+    color: "#ff8c42",
     textAlign: "center",
   },
   cellType: {
     flex: 1,
-    color: "#9ca3af",
+    color: "#8a9077",
     textAlign: "right",
   },
 });

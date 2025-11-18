@@ -55,7 +55,7 @@ export default function TidesScreen() {
 
         {isLoading && (
           <View style={styles.center}>
-            <ActivityIndicator color="#22d3ee" />
+            <ActivityIndicator color="#ff6b1a" />
             <Text style={styles.infoText}>Loading stations…</Text>
           </View>
         )}
@@ -93,7 +93,7 @@ export default function TidesScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#020617",
+    backgroundColor: "#2d3a1f",
   },
   container: {
     flex: 1,
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   heading: {
-    color: "#22d3ee",
+    color: "#ff6b1a",
     fontSize: 18,
     fontWeight: "600",
     marginBottom: 12,
@@ -112,13 +112,13 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    backgroundColor: "#020617",
+    backgroundColor: "#2d3a1f",
     borderWidth: 1,
     borderColor: "#374151",
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    color: "#e5e7eb",
+    color: "#ff8c42",
     marginRight: 8,
   },
   searchButton: {
@@ -126,10 +126,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 12,
     borderRadius: 8,
-    backgroundColor: "#22d3ee",
+    backgroundColor: "#ff6b1a",
   },
   searchButtonText: {
-    color: "#020617",
+    color: "#2d3a1f",
     fontWeight: "600",
   },
   center: {
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   infoText: {
-    color: "#9ca3af",
+    color: "#8a9077",
     marginTop: 8,
   },
   errorText: {
@@ -154,12 +154,12 @@ const styles = StyleSheet.create({
     borderBottomColor: "#111827",
   },
   stationName: {
-    color: "#e5e7eb",
+    color: "#ff8c42",
     fontSize: 16,
     fontWeight: "500",
   },
   stationSub: {
-    color: "#9ca3af",
+    color: "#8a9077",
     fontSize: 12,
     marginTop: 2,
   },
