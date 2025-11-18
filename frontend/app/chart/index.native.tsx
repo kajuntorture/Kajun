@@ -321,7 +321,7 @@ export default function ChartScreenNative() {
                     latitude: w.lat,
                     longitude: w.lon,
                   }))}
-                  strokeColor="#c026d3"
+                  strokeColor="#ff6b1a"
                   strokeWidth={3}
                   lineDashPattern={[0]}
                 />
