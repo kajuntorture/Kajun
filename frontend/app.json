@@ -42,7 +42,11 @@
       "typedRoutes": true
     },
     "extra": {
-      "router": {}
-    }
+      "router": {},
+      "eas": {
+        "projectId": "1803eae7-b162-4bd4-894e-c6325cdae23c"
+      }
+    },
+    "owner": "kajunboy90"
   }
 }
