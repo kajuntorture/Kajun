@@ -217,7 +217,7 @@ export default function ChartScreenNative() {
   let MarkerComp: any = null;
   let UrlTileComp: any = null;
   let PolylineComp: any = null;
-  let PROVIDER_GOOGLE_CONST: any = null;
+  let PROVIDER_DEFAULT_CONST: any = null;
 
   if (Platform.OS === "ios" || Platform.OS === "android") {
     try {
@@ -227,7 +227,7 @@ export default function ChartScreenNative() {
       MarkerComp = Maps.Marker;
       UrlTileComp = Maps.UrlTile;
       PolylineComp = Maps.Polyline;
-      PROVIDER_GOOGLE_CONST = Maps.PROVIDER_GOOGLE;
+      PROVIDER_DEFAULT_CONST = Maps.PROVIDER_DEFAULT;
     } catch (e) {
       // eslint-disable-next-line no-console
       console.log("react-native-maps not available", e);
