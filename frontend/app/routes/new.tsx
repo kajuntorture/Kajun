@@ -114,7 +114,7 @@ export default function NewRouteScreen() {
 
           {isLoading && (
             <View style={styles.center}>
-              <ActivityIndicator color="#22d3ee" />
+              <ActivityIndicator color="#ff6b1a" />
               <Text style={styles.infoText}>Loading waypoints…</Text>
             </View>
           )}
@@ -173,7 +173,7 @@ export default function NewRouteScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#020617",
+    backgroundColor: "#2d3a1f",
   },
   flex: {
     flex: 1,
@@ -185,25 +185,25 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   heading: {
-    color: "#22d3ee",
+    color: "#ff6b1a",
     fontSize: 18,
     fontWeight: "600",
     marginBottom: 12,
   },
   label: {
-    color: "#e5e7eb",
+    color: "#ff8c42",
     fontSize: 13,
     marginTop: 12,
     marginBottom: 4,
   },
   input: {
-    backgroundColor: "#020617",
+    backgroundColor: "#2d3a1f",
     borderWidth: 1,
     borderColor: "#374151",
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    color: "#e5e7eb",
+    color: "#ff8c42",
   },
   center: {
     alignItems: "center",
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   infoText: {
-    color: "#9ca3af",
+    color: "#8a9077",
     fontSize: 14,
     textAlign: "center",
   },
@@ -233,22 +233,22 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   rowSelected: {
-    borderColor: "#22d3ee",
+    borderColor: "#ff6b1a",
     backgroundColor: "#0b1120",
   },
   rowText: {
-    color: "#e5e7eb",
+    color: "#ff8c42",
   },
   saveButton: {
     marginTop: 16,
-    backgroundColor: "#22d3ee",
+    backgroundColor: "#ff6b1a",
     borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 12,
   },
   saveButtonText: {
-    color: "#020617",
+    color: "#2d3a1f",
     fontWeight: "600",
   },
 });

@@ -73,7 +73,7 @@ export default function RouteDetailScreen() {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.center}>
-          <ActivityIndicator color="#22d3ee" />
+          <ActivityIndicator color="#ff6b1a" />
           <Text style={styles.infoText}>Loading route…</Text>
         </View>
       </SafeAreaView>
@@ -135,7 +135,7 @@ export default function RouteDetailScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#020617",
+    backgroundColor: "#2d3a1f",
   },
   container: {
     flex: 1,
@@ -143,13 +143,13 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   heading: {
-    color: "#22d3ee",
+    color: "#ff6b1a",
     fontSize: 18,
     fontWeight: "600",
     marginBottom: 4,
   },
   desc: {
-    color: "#9ca3af",
+    color: "#8a9077",
     fontSize: 14,
     marginBottom: 12,
   },
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   infoText: {
-    color: "#9ca3af",
+    color: "#8a9077",
     fontSize: 14,
     textAlign: "center",
   },
@@ -174,11 +174,11 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   summaryLabel: {
-    color: "#9ca3af",
+    color: "#8a9077",
     fontSize: 12,
   },
   summaryValue: {
-    color: "#e5e7eb",
+    color: "#ff8c42",
     fontSize: 16,
     fontWeight: "600",
   },
@@ -188,10 +188,10 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#22d3ee",
+    borderColor: "#ff6b1a",
   },
   activeButtonText: {
-    color: "#22d3ee",
+    color: "#ff6b1a",
     fontWeight: "600",
   },
   legRow: {
@@ -202,11 +202,11 @@ const styles = StyleSheet.create({
     borderBottomColor: "#111827",
   },
   legIndex: {
-    color: "#e5e7eb",
+    color: "#ff8c42",
     fontSize: 14,
   },
   legDistance: {
-    color: "#e5e7eb",
+    color: "#ff8c42",
     fontSize: 14,
     fontWeight: "500",
   },
