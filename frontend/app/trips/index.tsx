@@ -5,6 +5,11 @@ import { FlashList } from "@shopify/flash-list";
 import { useQuery } from "@tanstack/react-query";
 import api from "../../src/api/client";
 
+const CAMO_DARK = "#2d3a1f";
+const CAMO_BROWN = "#4a3f2e";
+const ORANGE_ACCENT = "#ff6b1a";
+const ORANGE_TEXT = "#ff8c42";
+
 interface Trip {
   id: string;
   track_id: string;
@@ -57,7 +62,7 @@ export default function TripsScreen() {
 
         {isLoading && (
           <View style={styles.center}>
-            <ActivityIndicator color="#22d3ee" />
+            <ActivityIndicator color={ORANGE_ACCENT} />
             <Text style={styles.infoText}>Loading trips…</Text>
           </View>
         )}
@@ -112,7 +117,7 @@ export default function TripsScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#020617",
+    backgroundColor: CAMO_DARK,
   },
   container: {
     flex: 1,
@@ -120,7 +125,7 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   heading: {
-    color: "#22d3ee",
+    color: ORANGE_ACCENT,
     fontSize: 18,
     fontWeight: "600",
     marginBottom: 12,
@@ -131,12 +136,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   infoText: {
-    color: "#9ca3af",
+    color: "#8a9077",
     fontSize: 14,
     textAlign: "center",
   },
   errorText: {
-    color: "#fecaca",
+    color: ORANGE_TEXT,
     fontSize: 14,
     textAlign: "center",
   },
@@ -148,15 +153,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#111827",
+    borderBottomColor: CAMO_BROWN,
   },
   title: {
-    color: "#e5e7eb",
+    color: ORANGE_TEXT,
     fontSize: 16,
     fontWeight: "500",
   },
   sub: {
-    color: "#9ca3af",
+    color: "#8a9077",
     fontSize: 12,
     marginTop: 2,
   },
@@ -165,16 +170,16 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   distance: {
-    color: "#e5e7eb",
+    color: ORANGE_TEXT,
     fontSize: 14,
     fontWeight: "600",
   },
   duration: {
-    color: "#e5e7eb",
+    color: ORANGE_TEXT,
     fontSize: 12,
   },
   speed: {
-    color: "#9ca3af",
+    color: "#8a9077",
     fontSize: 11,
     marginTop: 2,
   },

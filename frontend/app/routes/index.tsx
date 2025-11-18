@@ -13,6 +13,11 @@ import { useRouter } from "expo-router";
 import api from "../../src/api/client";
 import { useRouteStore } from "../../src/store/useRouteStore";
 
+const CAMO_DARK = "#2d3a1f";
+const CAMO_BROWN = "#4a3f2e";
+const ORANGE_ACCENT = "#ff6b1a";
+const ORANGE_TEXT = "#ff8c42";
+
 interface Waypoint {
   id: string;
   name: string;
@@ -76,7 +81,7 @@ export default function RoutesScreen() {
 
         {loadingWpts && (
           <View style={styles.center}>
-            <ActivityIndicator color="#22d3ee" />
+            <ActivityIndicator color={ORANGE_ACCENT} />
             <Text style={styles.infoText}>Loading waypoints…</Text>
           </View>
         )}
@@ -123,7 +128,7 @@ export default function RoutesScreen() {
 
         {loadingRoutes && (
           <View style={styles.center}>
-            <ActivityIndicator color="#22d3ee" />
+            <ActivityIndicator color={ORANGE_ACCENT} />
             <Text style={styles.infoText}>Loading routes…</Text>
           </View>
         )}
@@ -176,7 +181,7 @@ export default function RoutesScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#020617",
+    backgroundColor: CAMO_DARK,
   },
   container: {
     flex: 1,
@@ -184,7 +189,7 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   heading: {
-    color: "#22d3ee",
+    color: ORANGE_ACCENT,
     fontSize: 18,
     fontWeight: "600",
     marginBottom: 12,
@@ -196,7 +201,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   linkText: {
-    color: "#22d3ee",
+    color: ORANGE_ACCENT,
     fontSize: 14,
     fontWeight: "600",
   },
@@ -206,12 +211,12 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   infoText: {
-    color: "#9ca3af",
+    color: "#8a9077",
     fontSize: 14,
     textAlign: "center",
   },
   errorText: {
-    color: "#fecaca",
+    color: ORANGE_TEXT,
     fontSize: 14,
     textAlign: "center",
   },
@@ -223,25 +228,26 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#111827",
+    borderBottomColor: CAMO_BROWN,
   },
   activeRow: {
-    borderColor: "#22d3ee",
+    borderColor: ORANGE_ACCENT,
     borderWidth: 1,
     borderRadius: 8,
+    backgroundColor: "rgba(255, 107, 26, 0.1)",
   },
   name: {
-    color: "#e5e7eb",
+    color: ORANGE_TEXT,
     fontSize: 16,
     fontWeight: "500",
   },
   coords: {
-    color: "#9ca3af",
+    color: "#8a9077",
     fontSize: 12,
     marginTop: 2,
   },
   activeLabel: {
-    color: "#22d3ee",
+    color: ORANGE_ACCENT,
     fontSize: 12,
     marginLeft: 8,
   },

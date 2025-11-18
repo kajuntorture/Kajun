@@ -14,11 +14,11 @@ export default function RootLayout() {
         <Tabs
           screenOptions={{
             headerShown: false,
-            tabBarActiveTintColor: "#00d8ff",
-            tabBarInactiveTintColor: "#9ca3af",
+            tabBarActiveTintColor: "#ff6b1a",
+            tabBarInactiveTintColor: "#8a9077",
             tabBarStyle: {
-              backgroundColor: "#020617",
-              borderTopColor: "#1f2933",
+              backgroundColor: "#1a2412",
+              borderTopColor: "#4a3f2e",
             },
           }}
         >
