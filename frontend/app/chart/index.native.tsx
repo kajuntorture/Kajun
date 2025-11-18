@@ -9,10 +9,13 @@ import { useTrackStore } from "../../src/store/useTrackStore";
 import { useRouteStore } from "../../src/store/useRouteStore";
 import { useRouter } from "expo-router";
 
-const GARMIN_BG = "#020617"; // near-black navy
-const GARMIN_PANEL = "#020617";
-const GARMIN_ACCENT = "#22d3ee"; // cyan
-const GARMIN_TEXT = "#e5e7eb"; // light gray
+const CAMO_DARK = "#2d3a1f"; // Dark olive green
+const CAMO_MID = "#3d4a2b"; // Medium olive
+const CAMO_BROWN = "#4a3f2e"; // Camo brown
+const CAMO_PANEL = "#1a2412"; // Very dark green
+const ORANGE_ACCENT = "#ff6b1a"; // Bright hunter orange
+const ORANGE_TEXT = "#ff8c42"; // Softer orange for text
+const ORANGE_HIGHLIGHT = "#ffb347"; // Light orange for highlights
 
 const TILE_ROOT = `${FileSystem.documentDirectory}tiles`;
 
