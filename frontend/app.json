@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "NaviGator",
-    "slug": "frontend",
+    "slug": "navigator",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -10,10 +10,10 @@
     "newArchEnabled": false,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.kajunboy90s.navigator"
+      "bundleIdentifier": "com.kajunboy90.navigator"
     },
     "android": {
-      "package": "com.kajunboy90s.navigator",
+      "package": "com.kajunboy90.navigator",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#3d4a2b"
@@ -33,7 +33,7 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#000"
+          "backgroundColor": "#3d4a2b"
         }
       ],
       "expo-dev-client"
@@ -42,11 +42,7 @@
       "typedRoutes": true
     },
     "extra": {
-      "router": {},
-      "eas": {
-        "projectId": "efb04c40-591e-4be3-b076-1c7d3b348f85"
-      }
-    },
-    "owner": "kajunboy90s-organization"
+      "router": {}
+    }
   }
 }
