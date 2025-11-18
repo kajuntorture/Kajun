@@ -293,7 +293,7 @@ export default function ChartScreenNative() {
             </View>
           )}
 
-          {!MapViewComp || !UrlTileComp || !MarkerComp || !PROVIDER_GOOGLE_CONST ? (
+          {!MapViewComp || !UrlTileComp || !MarkerComp || !PROVIDER_DEFAULT_CONST ? (
             <View style={[StyleSheet.absoluteFill, styles.loadingOverlay]}>
               <Text style={styles.loadingText}>
                 {mapError ?? "Map module not available in this Expo Go build. Chart data (SOG/COG, waypoints) still works."}
@@ -302,7 +302,7 @@ export default function ChartScreenNative() {
           ) : (
             <MapViewComp
               style={StyleSheet.absoluteFill}
-              provider={PROVIDER_GOOGLE_CONST}
+              provider={PROVIDER_DEFAULT_CONST}
               initialRegion={region}
               region={region}
               customMapStyle={garminDarkMapStyle}
