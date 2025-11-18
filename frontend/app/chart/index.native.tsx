@@ -305,22 +305,12 @@ export default function ChartScreenNative() {
               provider={PROVIDER_DEFAULT_CONST}
               initialRegion={region}
               region={region}
-              customMapStyle={garminDarkMapStyle}
               showsCompass={false}
               showsScale={false}
               rotateEnabled
               pitchEnabled={false}
               toolbarEnabled={false}
             >
-              <UrlTileComp
-                urlTemplate={useOfflineTiles ? offlineUrlTemplate : onlineUrlTemplate}
-                maximumZ={19}
-                flipY={false}
-                tileSize={256}
-                zIndex={-1}
-                shouldReplaceMapContent={false}
-              />
-
               {/* Active Route Polyline */}
               {activeRouteData && activeRouteData.waypoints.length > 1 && PolylineComp && (
                 <PolylineComp
