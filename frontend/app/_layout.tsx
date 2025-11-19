@@ -23,9 +23,10 @@ export default function RootLayout() {
           }}
         >
           <Tabs.Screen
-            name="chart/index"
+            name="chart"
             options={{
               title: "Chart",
+              href: "/chart",
             }}
           />
           <Tabs.Screen
