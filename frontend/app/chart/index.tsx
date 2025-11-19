@@ -1,15 +1,25 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-// Default fallback for Chart screen
-// Full NaviGator features in index.native.tsx for iOS/Android
-
+// Platform-aware Chart screen
 const CAMO_DARK = "#2d3a1f";
 const ORANGE_ACCENT = "#ff6b1a";
 const ORANGE_TEXT = "#ff8c42";
 
+// Dynamically import native component only on native platforms
+let ChartNative: any = null;
+if (Platform.OS === "ios" || Platform.OS === "android") {
+  ChartNative = require("./_ChartNative").default;
+}
+
 export default function ChartScreen() {
+  // On native platforms, use the full chart with maps
+  if (ChartNative) {
+    return <ChartNative />;
+  }
+
+  // On web, show fallback message
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -19,12 +29,12 @@ export default function ChartScreen() {
           The full marine navigation chart with GPS tracking and map tiles runs on iOS and Android devices.
         </Text>
         <Text style={[styles.text, { marginTop: 16 }]}>
-          📱 Open in Expo Go or build a native APK to use:
+          📱 Open in Expo Go on your device to use:
         </Text>
         <Text style={[styles.feature, { marginTop: 8 }]}>• Live GPS with SOG/COG</Text>
         <Text style={styles.feature}>• Route navigation with ETA</Text>
-        <Text style={styles.feature}>• Waypoint markers</Text>
-        <Text style={styles.feature}>• Native maps</Text>
+        <Text style={styles.feature}>• Waypoint markers & routes</Text>
+        <Text style={styles.feature}>• Native maps with camo theme</Text>
       </View>
     </SafeAreaView>
   );
