@@ -440,7 +440,7 @@ async def create_route(payload: RouteCreate):
 
 @api_router.get("/routes", response_model=List[Route])
 async def list_routes():
-    cursor = db.routes.find().sort("created_at", -1)
+    cursor = db.routes.find().sort("created_at", -1).limit(100)
     items: List[Route] = []
     async for doc in cursor:
         items.append(route_from_doc(doc))
