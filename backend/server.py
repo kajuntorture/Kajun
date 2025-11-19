@@ -505,12 +505,12 @@ async def get_route_with_waypoints(route_id: str):
             created_at=route_doc["created_at"],
         )
 
-    # Fetch all waypoints in order
-    waypoints_list = []
-    for wid in waypoint_ids:
-        wpt_doc = await db.waypoints.find_one({"_id": wid})
-        if wpt_doc:
-            waypoints_list.append(waypoint_from_doc(wpt_doc))
+    # Fetch all waypoints in a single query (optimized - no N+1)
+    waypoints_docs = await db.waypoints.find({"_id": {"$in": waypoint_ids}}).to_list(None)
+    waypoints_map = {str(doc["_id"]): waypoint_from_doc(doc) for doc in waypoints_docs}
+    
+    # Maintain order from waypoint_ids
+    waypoints_list = [waypoints_map[str(wid)] for wid in waypoint_ids if str(wid) in waypoints_map]
 
     # Calculate total distance between consecutive waypoints
     total_distance_nm = 0.0
