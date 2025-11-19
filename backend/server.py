@@ -251,7 +251,7 @@ async def end_track(track_id: str, end_time: Optional[datetime] = None):
 
 @api_router.get("/tracks", response_model=List[Track])
 async def list_tracks():
-    cursor = db.tracks.find().sort("start_time", -1)
+    cursor = db.tracks.find().sort("start_time", -1).limit(100)
     items: List[Track] = []
     async for doc in cursor:
         items.append(
