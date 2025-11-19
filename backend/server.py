@@ -379,7 +379,7 @@ async def create_waypoint(payload: WaypointCreate):
 
 @api_router.get("/waypoints", response_model=List[Waypoint])
 async def list_waypoints():
-    cursor = db.waypoints.find().sort("created_at", -1)
+    cursor = db.waypoints.find().sort("created_at", -1).limit(200)
     items: List[Waypoint] = []
     async for doc in cursor:
         items.append(waypoint_from_doc(doc))
