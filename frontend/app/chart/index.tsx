@@ -3,22 +3,29 @@ import { View, Text, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 // Web-only fallback for the Chart screen.
-// The real Garmin-style chart with maps and GPS is implemented in index.native.tsx
+// The NaviGator chart with maps and GPS is implemented in index.native.tsx
 // and will run on iOS/Android (Expo Go or native builds).
 
-const GARMIN_BG = "#020617";
-const GARMIN_ACCENT = "#22d3ee";
-const GARMIN_TEXT = "#e5e7eb";
+const CAMO_DARK = "#2d3a1f";
+const ORANGE_ACCENT = "#ff6b1a";
+const ORANGE_TEXT = "#ff8c42";
 
 export default function ChartScreenWeb() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <Text style={styles.title}>Chart view is native-only</Text>
+        <Text style={styles.title}>🦆 NaviGator Chart</Text>
+        <Text style={styles.subtitle}>Native-Only Feature</Text>
         <Text style={styles.text}>
-          The full Garmin-style navigation chart (with GPS and marine map tiles) runs on iOS and Android.
+          The full marine navigation chart with GPS tracking and map tiles runs on iOS and Android devices.
         </Text>
-        <Text style={[styles.text, { marginTop: 8 }]}>Open this project in Expo Go or a native build to see it.</Text>
+        <Text style={[styles.text, { marginTop: 16 }]}>
+          📱 Open in Expo Go or build a native APK to use:
+        </Text>
+        <Text style={[styles.feature, { marginTop: 8 }]}>• Live GPS with SOG/COG</Text>
+        <Text style={styles.feature}>• Route navigation with ETA</Text>
+        <Text style={styles.feature}>• Waypoint markers</Text>
+        <Text style={styles.feature}>• Native maps</Text>
       </View>
     </SafeAreaView>
   );
@@ -27,7 +34,7 @@ export default function ChartScreenWeb() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: GARMIN_BG,
+    backgroundColor: CAMO_DARK,
   },
   container: {
     flex: 1,
@@ -36,15 +43,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   title: {
-    color: GARMIN_ACCENT,
-    fontSize: 18,
+    color: ORANGE_ACCENT,
+    fontSize: 24,
+    fontWeight: "700",
+    marginBottom: 4,
+    textAlign: "center",
+  },
+  subtitle: {
+    color: ORANGE_TEXT,
+    fontSize: 16,
     fontWeight: "600",
-    marginBottom: 8,
+    marginBottom: 16,
     textAlign: "center",
   },
   text: {
-    color: GARMIN_TEXT,
+    color: ORANGE_TEXT,
     fontSize: 14,
+    textAlign: "center",
+    lineHeight: 20,
+  },
+  feature: {
+    color: "#8a9077",
+    fontSize: 13,
     textAlign: "center",
   },
 });
