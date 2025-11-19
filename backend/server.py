@@ -268,7 +268,7 @@ async def list_tracks():
 
 @api_router.get("/trips", response_model=List[Trip])
 async def list_trips():
-    cursor = db.trips.find().sort("start_time", -1)
+    cursor = db.trips.find().sort("start_time", -1).limit(100)
     items: List[Trip] = []
     async for doc in cursor:
         items.append(
