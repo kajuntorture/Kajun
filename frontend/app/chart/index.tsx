@@ -6,16 +6,23 @@ const CAMO_DARK = "#2d3a1f";
 const ORANGE_ACCENT = "#ff6b1a";
 const ORANGE_TEXT = "#ff8c42";
 
-// Only import ChartNative on actual native platforms
-const ChartNative = Platform.OS !== "web" ? require("../../src/components/ChartNative").default : null;
+// Dynamically import native component from components folder
+let ChartNative: any = null;
+if (Platform.OS === "ios" || Platform.OS === "android") {
+  try {
+    ChartNative = require("../../src/components/ChartNative").default;
+  } catch (e) {
+    console.log("ChartNative not available");
+  }
+}
 
 export default function ChartScreen() {
   // Use native chart on iOS/Android
-  if (ChartNative && Platform.OS !== "web") {
+  if (ChartNative) {
     return <ChartNative />;
   }
 
-  // Web fallback
+  // Web/fallback
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
