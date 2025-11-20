@@ -1,47 +1,32 @@
 import React from "react";
-import { View, Text, StyleSheet, Platform } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const CAMO_DARK = "#2d3a1f";
 const ORANGE_ACCENT = "#ff6b1a";
 const ORANGE_TEXT = "#ff8c42";
 
-// Dynamically import native component from components folder
-let ChartNative: any = null;
-if (Platform.OS === "ios" || Platform.OS === "android") {
-  try {
-    ChartNative = require("../../src/components/ChartNative").default;
-  } catch (e) {
-    console.log("ChartNative not available");
-  }
-}
-
+// Fallback chart screen (no native imports)
 export default function ChartScreen() {
-  // Use native chart on iOS/Android
-  if (ChartNative) {
-    return <ChartNative />;
-  }
-
-  // Web/fallback
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <Text style={styles.title}>🦆 NaviGator Chart</Text>
-        <Text style={styles.subtitle}>Mobile App Only</Text>
+        <Text style={styles.subtitle}>Mobile Device Required</Text>
         <Text style={styles.text}>
-          This marine navigation app is designed for mobile devices with GPS.
+          The navigation chart with GPS and maps is available on mobile devices.
         </Text>
-        <Text style={[styles.text, { marginTop: 16, fontWeight: "600" }]}>
-          📱 Download Expo Go on your phone:
+        <Text style={[styles.text, { marginTop: 20, fontWeight: "600", fontSize: 16 }]}>
+          📱 Use Expo Go on your phone
         </Text>
-        <Text style={[styles.text, { marginTop: 8 }]}>
-          iOS: App Store → "Expo Go"
+        <Text style={[styles.text, { marginTop: 12 }]}>
+          1. Download "Expo Go" from App Store or Play Store
         </Text>
         <Text style={styles.text}>
-          Android: Play Store → "Expo Go"  
+          2. Open Expo Go and scan the QR code
         </Text>
-        <Text style={[styles.text, { marginTop: 16 }]}>
-          Then scan the QR code to see NaviGator with full camo theme and maps!
+        <Text style={styles.text}>
+          3. See full NaviGator with camo theme!
         </Text>
       </View>
     </SafeAreaView>
