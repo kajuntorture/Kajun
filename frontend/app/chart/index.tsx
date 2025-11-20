@@ -1,12 +1,21 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const CAMO_DARK = "#2d3a1f";
 const ORANGE_ACCENT = "#ff6b1a";
 const ORANGE_TEXT = "#ff8c42";
 
+// Only import ChartNative on actual native platforms
+const ChartNative = Platform.OS !== "web" ? require("../../src/components/ChartNative").default : null;
+
 export default function ChartScreen() {
+  // Use native chart on iOS/Android
+  if (ChartNative && Platform.OS !== "web") {
+    return <ChartNative />;
+  }
+
+  // Web fallback
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
