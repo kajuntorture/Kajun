@@ -25,7 +25,7 @@ yarn install
 2. File → Open
 3. Navigate to `frontend/android/` folder
 4. Click "OK"
-
+[android](../../../../../OneDrive/Desktop/navigator/navigator-app/frontend/android)
 ⚠️ **Important:** Open the `android` folder, NOT the `frontend` folder!
 
 ### 4. Wait for Gradle Sync
